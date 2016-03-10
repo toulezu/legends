@@ -10,15 +10,13 @@
 
 	<context:component-scan base-package="com.tongbanjie.legends.server.web" />
 
-	<bean class="com.tongbanjie.diamond.spring.SpringPlaceholderDiamondConfigLoader">
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations">
 			<array>
 				<value>classpath:config.properties</value>
 				<value>classpath:jdbc.properties</value>
 			</array>
 		</property>
-		<property name="groupId" value="legends" />
-		<property name="dataId" value="config" />
 	</bean>
 
 	<mvc:annotation-driven content-negotiation-manager="contentNegotiationManager">

@@ -16,7 +16,7 @@
             <value>${jdbc.druid.user}</value>
         </property>
         <property name="password">
-            <value>"${jdbc.druid.password}"</value>
+            <value>${jdbc.druid.password}</value>
         </property>
         <property name="filters">
             <value>${jdbc.druid.filters}</value>
