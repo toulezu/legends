@@ -54,18 +54,6 @@ public abstract class HttpClientUtils {
         client = HttpClients.custom().setConnectionManager(cm).setRetryHandler(new DefaultHttpRequestRetryHandler(0, false)).build();
     }
 
-    /**
-     * @deprecated 为了兼容旧代码所以存在此方法.<br>
-     *             1. contentType 此方法中使用了完整 contentType,比如[application/xml; charset=GBK], 应该使用更标准的 mimeType 以及 charset<br>
-     *             2. HttpClient 超时设定使用的是 Int32 , 所以这里也不推荐再使用 Int64. <br>
-     */
-    public static String post(String url, String body, String contentType, String encode, long readTimeout) throws ConnectTimeoutException, SocketTimeoutException, Exception {
-        String mimeType = contentType;
-        if (StringUtils.isNotBlank(contentType) && contentType.contains(";")) {
-            mimeType = contentType.substring(0, contentType.indexOf(";")).trim();
-        }
-        return post(url, body, mimeType, encode, null, Integer.valueOf(Long.valueOf(readTimeout).intValue()));
-    }
 
     /**
      * 发送一个 Post 请求, 使用指定的字符集编码.
@@ -152,103 +140,10 @@ public abstract class HttpClientUtils {
         return result;
     }
 
-    /**
-     * 提交form表单
-     * 
-     * @param url
-     * @param params
-     * @param headers
-     * @param connTimeout
-     * @param readTimeout
-     * @return
-     * @throws ConnectTimeoutException
-     * @throws SocketTimeoutException
-     * @throws Exception
-     */
-    public static String postForm(String url, Map<String, String> params, Map<String, String> headers, Integer connTimeout, Integer readTimeout) throws ConnectTimeoutException, SocketTimeoutException, Exception {
-
-        return postForm(url, params, headers, null, connTimeout, readTimeout);
-    }
-
-    /**
-     * 提交form表单，可以设置charset，如果charset为null，默认UTF-8
-     * 
-     * @param url
-     * @param params
-     * @param headers
-     * @param charset
-     * @param connTimeout
-     * @param readTimeout
-     * @return
-     * @throws ConnectTimeoutException
-     * @throws SocketTimeoutException
-     * @throws Exception
-     */
-    public static String postForm(String url, Map<String, String> params, Map<String, String> headers, String charset, Integer connTimeout, Integer readTimeout) throws ConnectTimeoutException, SocketTimeoutException, Exception {
-
-        HttpClient client = null;
-
-        HttpPost post = new HttpPost(url);
-        try {
-            if (params != null && !params.isEmpty()) {
-                List<NameValuePair> formParams = new ArrayList<org.apache.http.NameValuePair>();
-                Set<Entry<String, String>> entrySet = params.entrySet();
-                for (Entry<String, String> entry : entrySet) {
-                    formParams.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
-                }
-                UrlEncodedFormEntity entity = null;
-                if (StringUtils.isNotBlank(charset)) {
-                    entity = new UrlEncodedFormEntity(formParams, Charset.forName(charset.toUpperCase()));
-                } else {
-                    entity = new UrlEncodedFormEntity(formParams, Consts.UTF_8);
-                }
-                post.setEntity(entity);
-            }
-            if (headers != null && !headers.isEmpty()) {
-                for (Entry<String, String> entry : headers.entrySet()) {
-                    post.addHeader(entry.getKey(), entry.getValue());
-                }
-            }
-            // 设置参数
-            Builder customReqConf = RequestConfig.custom();
-            if (connTimeout != null) {
-                customReqConf.setConnectTimeout(connTimeout);
-            }
-            if (readTimeout != null) {
-                customReqConf.setSocketTimeout(readTimeout);
-            }
-            post.setConfig(customReqConf.build());
-            HttpResponse res = null;
-            if (url.startsWith("https")) {
-                // 执行 Https 请求.
-                client = createSSLInsecureClient();
-                res = client.execute(post);
-            } else {
-                // 执行 Http 请求.
-                client = HttpClientUtils.client;
-                res = client.execute(post);
-            }
-            HttpEntity resEntity = res.getEntity();
-            if (resEntity != null) {
-                if (StringUtils.isNotBlank(charset)) {
-                    return IOUtils.toString(res.getEntity().getContent(), charset.toUpperCase());
-                } else {
-                    return IOUtils.toString(res.getEntity().getContent(), "UTF-8");
-                }
-            } else {
-                return null;
-            }
-        } finally {
-            post.releaseConnection();
-            if (url.startsWith("https") && client != null && client instanceof CloseableHttpClient) {
-                ((CloseableHttpClient) client).close();
-            }
-        }
-    }
 
     /**
      * 发送一个 GET 请求
-     * 
+     *
      * @param url
      * @param charset
      * @return
@@ -260,7 +155,7 @@ public abstract class HttpClientUtils {
 
     /**
      * 发送一个 GET 请求
-     * 
+     *
      * @param url
      * @param charset
      * @param connTimeout 建立链接超时时间,毫秒.
@@ -310,7 +205,7 @@ public abstract class HttpClientUtils {
 
     /**
      * 从 response 里获取 charset
-     * 
+     *
      * @param ressponse
      * @return
      */
@@ -356,25 +251,6 @@ public abstract class HttpClientUtils {
             return HttpClients.custom().setSSLSocketFactory(sslsf).setRetryHandler(new DefaultHttpRequestRetryHandler(0, false)).build();
         } catch (GeneralSecurityException e) {
             throw e;
-        }
-    }
-
-    public static void main(String[] args) {
-        try {
-            Map<String, String> header = new HashMap<String, String>();
-            header.put("CLIENT_VERSION", "3.1.0");
-            header.put("Cookie", "JSESSIONID=538a385d4bf945e4a05ef44b0721fcd1;");
-            header.put("MOBILE_DEVICE", "ANDROID_PHONE");
-
-            // trade.tongbanjie.com
-            // 192.168.1.109:8101
-			String string = post("http://192.168.1.109:8101/trade/test.jsp", header, null, null, "utf-8",
-					10000, 10000);
-            System.out.println(string);
-            System.out.println(string.length()); // 2178129
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }
