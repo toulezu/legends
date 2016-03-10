@@ -1,0 +1,181 @@
+package com.tongbanjie.legends.server.web.controller;
+
+import java.net.SocketTimeoutException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import com.tongbanjie.legends.server.utils.Result;
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.conn.ConnectTimeoutException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.alibaba.fastjson.JSON;
+import com.tongbanjie.legends.client.model.JobStopResponse;
+import com.tongbanjie.legends.server.dao.dataobject.JobSnapshot;
+import com.tongbanjie.legends.server.service.JobSnapshotService;
+import com.tongbanjie.legends.server.utils.StringEditor;
+
+/**
+ * 
+ * @author chen.jie
+ * 
+ */
+@Controller
+@RequestMapping("/jobsnapshot")
+public class JobSnapshotManagementController {
+
+	private Logger logger = LoggerFactory.getLogger(JobSnapshotManagementController.class);
+
+	private static final int STATUS_SUCCESS = 0;
+
+	private static final int STATUS_FAILURE = 1;
+
+	@Resource
+	private JobSnapshotService jobSnapshotService;
+
+	@InitBinder
+	public void initBinder(WebDataBinder binder) throws Exception {
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		CustomDateEditor dateEditor = new CustomDateEditor(df, true);
+		binder.registerCustomEditor(Date.class, dateEditor);
+		binder.registerCustomEditor(String.class, new StringEditor());
+	}
+
+	@RequestMapping("/view/{id}.htm")
+	public String viewJobSnapshot(@PathVariable("id") long id, Model model) {
+		Result<JobSnapshot> result = jobSnapshotService.selectJobSnapshotById(id);
+		if (result.isSuccess()) {
+			model.addAttribute("status", STATUS_SUCCESS);
+			model.addAttribute("data", result.getData());
+		} else {
+			model.addAttribute("status", STATUS_FAILURE);
+			model.addAttribute("errorMsg", result.getErrorMsg());
+		}
+
+		return "jobSnapshot/view";
+	}
+
+	@RequestMapping("/list.htm")
+	public String selectList(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "group", required = false) String group,
+			@RequestParam(value = "status", required = false) String status, Model model) {
+
+		Result<List<JobSnapshot>> result = null;
+		if (StringUtils.isBlank(name) && StringUtils.isBlank(group) && StringUtils.isBlank(status)) {
+			// 如果没有查询条件,默认只展现前100条.
+			result = jobSnapshotService.selectListByNameAndGroupAndStatus(name, group, status, 100);
+		} else {
+			result = jobSnapshotService.selectListByNameAndGroupAndStatus(name, group, status);
+		}
+
+		Map<String, String> p = new HashMap<String, String>();
+		p.put("name", name);
+		p.put("group", group);
+		p.put("status", status);
+		model.addAttribute("p", p);
+
+		if (result.isSuccess()) {
+			model.addAttribute("status", STATUS_SUCCESS);
+			model.addAttribute("data", result.getData());
+		} else {
+			model.addAttribute("status", STATUS_FAILURE);
+			model.addAttribute("errorMsg", result.getErrorMsg());
+		}
+
+		return "jobSnapshot/list";
+	}
+
+	@ResponseBody
+	@RequestMapping("/clean/onemonth")
+	public Map<String, Object> cleanOneMonth() {
+		Map<String, Object> r = new HashMap<String, Object>();
+
+		Result<Boolean> result = null;
+		try {
+			// 因为这里使用了事务, 所以service 出错会将异常抛出.
+			result = jobSnapshotService.dataCleanOneMonthAgo();
+		} catch (Exception e) {
+			logger.error("", e);
+		}
+
+		if (result != null && result.isSuccess()) {
+			r.put("status", STATUS_SUCCESS);
+		} else {
+			r.put("status", STATUS_FAILURE);
+			r.put("errorMsg", "系统异常，请联系开发人员！");
+		}
+		return r;
+	}
+
+	@ResponseBody
+	@RequestMapping("/clean/oneweek")
+	public Map<String, Object> cleanOneWeek() {
+		Map<String, Object> r = new HashMap<String, Object>();
+
+		Result<Boolean> result = null;
+		try {
+			// 因为这里使用了事务, 所以service 出错会将异常抛出.
+			result = jobSnapshotService.dataCleanOneWeekAgo();
+		} catch (Exception e) {
+			logger.error("", e);
+		}
+
+		if (result != null && result.isSuccess()) {
+			r.put("status", STATUS_SUCCESS);
+		} else {
+			r.put("status", STATUS_FAILURE);
+			r.put("errorMsg", "系统异常，请联系开发人员！");
+		}
+		return r;
+	}
+	
+	
+	
+	/**
+	 * san.feng
+	 * 
+	 * 人不好嘴不甜长的磕碜还没钱
+	 * @throws Exception 
+	 * @throws SocketTimeoutException 
+	 * @throws ConnectTimeoutException 
+	 * 
+	 */
+	@ResponseBody
+	@RequestMapping("/stop/{id}")
+	public Map<String, Object> stopJobSnapshort(@PathVariable("id") long id) throws ConnectTimeoutException, SocketTimeoutException, Exception {
+		Map<String, Object> mapResult = new HashMap<String, Object>();
+
+		logger.info("execute stop jobsnapshort >>>, jobSnapshortId=" + id);
+		
+		JobStopResponse stopResp = jobSnapshotService.execStopAndGetResult(id);
+		
+		logger.info("RESULT=" + JSON.toJSON(stopResp));
+		
+		
+		if (stopResp.isStopNoticeSucc()) {
+			mapResult.put("status", STATUS_SUCCESS);
+			mapResult.put("stopDetail", stopResp.getStopDetail());
+		} else {
+			mapResult.put("status", STATUS_FAILURE);
+			mapResult.put("errorMsg", stopResp.getErrorMsg());
+		}
+		
+		return mapResult;
+	}
+	
+}

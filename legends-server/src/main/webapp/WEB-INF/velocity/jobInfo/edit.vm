@@ -1,0 +1,191 @@
+<div class="page-header">
+  <h1><small>编辑任务</small></h1>
+</div>
+
+<form id="form" class="form-horizontal" role="form" action="$ac.contextPath/jobinfo/edit.htm" method="post">
+	<input type="hidden" id="id" name="id" value="$!data.id" />
+	<div class="form-group">
+		<label for="name" class="col-sm-2 control-label">任务名称:</label>
+		<div class="col-sm-4">
+			<input type="text"  class="form-control" id="name" name="name" value="$!data.name" placeholder="必须填写" autocomplete="off" readonly   />
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="group" class="col-sm-2 control-label">任务分组:</label>
+		<div class="col-sm-4">
+			<input type="text"  class="form-control" id="group" name="group" value="$!data.group" placeholder="必须填写" autocomplete="off" readonly />
+		</div>
+	</div>
+	
+	<input type="hidden" name="type" value="$!data.type" />
+	
+	<div class="form-group">
+		<label for="type" class="col-sm-2 control-label">任务类型:</label>
+		<div class="col-sm-4">
+			<select  id="type" name="typeDisplay" class="form-control" disabled  >
+				<option value="ONCE"  >
+					一次 (指定时间)
+                </option>
+				<option value="REPEAT" #if("$data.type" == "REPEAT") selected  #end >
+					多次 (Cron表达式)
+                </option>
+            </select>
+		</div>
+	</div>
+	<div id="timeDiv" class="form-group">
+		<label for="time" class="col-sm-2 control-label">触发时间:</label>
+		<div class="col-sm-4">
+			<input type="text"  class="form-control" id="time" name="time" value="$!datetool.format('yyyy-MM-dd HH:mm:ss',$!data.time)" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss',skin:'whyGreen'})" placeholder="必须填写" autocomplete="off"/>
+		</div>
+	</div>
+	<div id="cronDiv" class="form-group" style="display:none">
+		<label for="cron" class="col-sm-2 control-label">Cron表达式:</label>
+		<div class="col-sm-4">
+			<input type="text"  class="form-control" id="cron" name="cron" value="$!data.cron" placeholder="必须填写" autocomplete="off" />
+			
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="urls" class="col-sm-2 control-label">目标服务器 URL:</label>
+		<div class="col-sm-4">
+			<input type="text"  class="form-control" id="urls" name="urls" value="$!data.urls" placeholder="必须填写, 多条请用半角逗号分割" autocomplete="off" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="classPath" class="col-sm-2 control-label">任务类全路径:</label>
+		<div class="col-sm-4">
+			<input type="text"  class="form-control" id="classPath" name="classPath" value="$!data.classPath" placeholder="必须填写, 并且需为Spring Bean." autocomplete="off" />
+		</div>
+		<div class="col-sm-4">
+			<button id="testBtn" type="button" class="btn btn-info" >测试服务器和任务类是否可用</button>
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="invokePolicy" class="col-sm-2 control-label">调用策略:</label>
+    	<div class="col-sm-4">
+    		<div class="radio radio-inline">
+    			<label>
+    				<input type="radio" id="classPathPriority" name="invokePolicy" value="PRIORITY" 
+						#if(!$data.invokePolicy || "$data.invokePolicy" == 'PRIORITY')
+							checked  
+						#end 
+					/>
+    				顺序优先
+                </label>
+            </div>
+    		<div class="radio radio-inline">
+    			<label>
+        			<input type="radio" id="classPathRandom" name="invokePolicy" value="RANDOM" 
+					#if("$data.invokePolicy" == 'RANDOM')
+						checked  
+					#end 
+					/>
+        			随机选取
+                </label>
+    		</div>
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="activity" class="col-sm-2 control-label">是否激活:</label>
+    	<div class="col-sm-4">
+    		<div class="checkbox">
+    			<label>
+    				<input type="checkbox"  id="activity" name="activity"
+						#if($!data.isActivity())
+							checked
+						#end
+					/>
+    				激活
+                </label>
+            </div>
+		</div>
+    </div>
+	<div class="form-group">
+		<label for="param" class="col-sm-2 control-label">参数:</label>
+    	<div class="col-sm-4">
+			<textarea  class="form-control col-sm-10" style="resize:none;" rows="5" id="param" name="param" autocomplete="off" placeholder="最多 255 个字符" />$!data.param</textarea>
+		</div>
+    </div>
+	<div class="form-group">
+		<label for="desc" class="col-sm-2 control-label">描述:</label>
+    	<div class="col-sm-4">
+			<textarea  class="form-control col-sm-10" style="resize:none;" rows="5" id="desc" name="desc" autocomplete="off" />$!data.desc</textarea>
+		</div>
+    </div>
+    <div class="form-group">
+        <label for="ownerPhone" class="col-sm-2 control-label">负责人手机号:</label>
+        <div class="col-sm-4">
+            <input type="text"  class="form-control" id="ownerPhone" name="ownerPhone" value="$!data.ownerPhone" placeholder="任务执行异常时，会短信通知您" autocomplete="off" />
+        </div>
+    </div>
+	<div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button id="submitBtn" type="submit" class="btn btn-primary">保存任务</button>
+            <button id="executeBtn" type="submit" class="btn btn-primary">保存并执行任务</button>
+        </div>
+	</div>
+</form>
+
+#parse("/commons/alert.vm")
+
+<script >
+
+	if("ONCE" == $("#type").val()){
+			$("#cronDiv").hide();
+			$("#cron").val("");
+			$("#timeDiv").show();			
+	}else{
+		$("#timeDiv").hide();
+		$("#time").val("");
+		$("#cronDiv").show();
+	}
+	
+	// 提交时,锁定Submit ,防止重复提交.
+	$("#submitBtn").click(function(){
+		$(this).attr("disabled","disabled");
+		$("#form").submit();
+	});
+
+    // 提交时,锁定按钮 ,防止重复提交.
+    $("#executeBtn").click(function(){
+        $(this).attr("disabled","disabled");
+        $("#form").attr("action", "$ac.contextPath/jobinfo/execute.htm");
+        $("#form").submit();
+    });
+	
+	var liArray = $("#navBarUl li");
+	jQuery.each(liArray, function(i,n){
+		$(n).removeClass("active");
+	});
+	
+	$("#testBtn").click(function (){
+		var urls = $("#urls").val()
+		if(urls == ""){
+			showError("目标服务器URL必须填写");
+			return false;
+		}
+		
+		var classPath = $("#classPath").val()
+		if(classPath == ""){
+			showError("任务类全路径必须填写");
+			return false;
+		}
+		
+		var p = {
+			urls:urls,
+			classPath:classPath
+		}
+		
+		$("#testBtn").attr("disabled","disabled");
+	
+    	jQuery.getJSON("$ac.contextPath/jobinfo/test/",p, function(json){
+    		if(json.status ==0){
+    			showSuccess(json.successMsg);
+    		}else{
+    			showError(json.errorMsg);
+    		}
+			$("#testBtn").removeAttr("disabled");
+        });
+	});
+	
+</script>
