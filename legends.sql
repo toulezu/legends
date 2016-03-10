@@ -23,7 +23,7 @@ CREATE TABLE `job_info` (
   `owner_phone` varchar(20) DEFAULT NULL COMMENT '负责人手机号',
   PRIMARY KEY (`id`),
   UNIQUE KEY `JOB_INFO_UK_NAME_GROUP` (`name`,`group`)
-) ENGINE=InnoDB AUTO_INCREMENT=242 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 --  Table structure for `job_info_history`
@@ -49,7 +49,7 @@ CREATE TABLE `job_info_history` (
   `latest_server_address` varchar(100) DEFAULT NULL COMMENT '上一次触发任务的服务器地址',
   `owner_phone` varchar(20) DEFAULT NULL COMMENT '负责人手机号',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=120 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 --  Table structure for `job_snapshot`
@@ -74,7 +74,7 @@ CREATE TABLE `job_snapshot` (
   KEY `IDX_GROUP_STATUS` (`group`,`status`),
   KEY `IDX_STATUS` (`status`),
   KEY `IDX_JOB_INFO_ID` (`job_info_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=1153579 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 --  Table structure for `job_snapshot_history`
@@ -97,4 +97,4 @@ CREATE TABLE `job_snapshot_history` (
   `server_address` varchar(100) DEFAULT NULL COMMENT '触发任务的服务器地址',
   PRIMARY KEY (`id`),
   KEY `job_info_id` (`job_info_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=702290 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
