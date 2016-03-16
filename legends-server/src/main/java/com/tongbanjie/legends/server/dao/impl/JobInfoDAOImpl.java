@@ -64,10 +64,6 @@ public class JobInfoDAOImpl extends SqlSessionDaoSupport implements JobInfoDAO {
 		Assert.notNull(jobInfo);
 		Assert.notNull(jobInfo.getId());
 
-		if (jobInfo.getParam() == null) {
-			jobInfo.setParam("");
-		}
-
 		jobInfo.setModifyTime(new Date());
 		return getSqlSession().update("JobInfo.updateById", jobInfo);
 	}
