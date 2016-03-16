@@ -50,6 +50,9 @@ public class JobInfoDAOImpl extends SqlSessionDaoSupport implements JobInfoDAO {
 
 	@Override
 	public int insert(JobInfo jobInfo) {
+
+		Assert.notNull(jobInfo);
+
 		jobInfo.setCreateTime(new Date());
 		jobInfo.setModifyTime(new Date());
 		return getSqlSession().insert("JobInfo.insert", jobInfo);
@@ -57,6 +60,14 @@ public class JobInfoDAOImpl extends SqlSessionDaoSupport implements JobInfoDAO {
 
 	@Override
 	public int updateById(JobInfo jobInfo) {
+
+		Assert.notNull(jobInfo);
+		Assert.notNull(jobInfo.getId());
+
+		if (jobInfo.getParam() == null) {
+			jobInfo.setParam("");
+		}
+
 		jobInfo.setModifyTime(new Date());
 		return getSqlSession().update("JobInfo.updateById", jobInfo);
 	}
