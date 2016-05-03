@@ -15,9 +15,7 @@ public class SmsServiceImpl implements SmsService {
 
 
 	@Override
-	public void sendAlertSms(String phone, Long jobInfoId, String jobInfoName, String errorMessage) {
-
-		//TODO  send sms
+	public void sendAlertSms(String phone, Long jobInfoId, String jobInfoName, Long jobSnapshotId, String errorMessage) {
 
 	}
 }

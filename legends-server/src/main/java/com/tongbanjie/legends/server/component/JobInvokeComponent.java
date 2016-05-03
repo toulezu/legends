@@ -114,7 +114,7 @@ public class JobInvokeComponent {
 			return jobSnapshotDAO.findById(jobSnapshotId);
 		} catch (Exception e) {
 			if (jobInfo != null && jobInfo.getOwnerPhone() != null) {
-				smsService.sendAlertSms(jobInfo.getOwnerPhone(), jobInfoId, jobInfo.getName(), "任务Invoke阶段发生异常！");
+				smsService.sendAlertSms(jobInfo.getOwnerPhone(), jobInfoId, jobInfo.getName(), jobSnapshotId, "任务Invoke阶段发生异常！");
 			}
 			throw e; // 因为会把异常抛出去， 这里就不重复记日志了
 		}
@@ -213,7 +213,7 @@ public class JobInvokeComponent {
 		}
 
 		if (jobInfo != null && jobInfo.getOwnerPhone() != null) {
-			smsService.sendAlertSms(jobInfo.getOwnerPhone(), jobInfo.getId(), jobInfo.getName(), errorMessage);
+			smsService.sendAlertSms(jobInfo.getOwnerPhone(), jobInfo.getId(), jobInfo.getName(), jobSnapshot.getId(), errorMessage);
 		}
 
 	}

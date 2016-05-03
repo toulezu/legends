@@ -74,7 +74,7 @@ public class JobStartComponent {
 
 		} catch (Exception e) {
 			if (jobInfo != null && jobInfo.getOwnerPhone() != null) {
-				smsService.sendAlertSms(jobInfo.getOwnerPhone(), jobInfoId, jobInfo.getName(), "任务启动失败！");
+				smsService.sendAlertSms(jobInfo.getOwnerPhone(), jobInfoId, jobInfo.getName(), null, "任务启动失败！");
 			}
 			throw e; // 因为会把异常抛出去， 这里就不重复记日志了
 		}

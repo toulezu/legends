@@ -8,15 +8,11 @@ import org.springframework.stereotype.Service;
  */
 public interface SmsService {
 
-
-	/**
+	/*
 	 * 发送报警短信
-	 * @param phone
-	 * @param jobInfoId
-	 * @param jobInfoName
-	 * @param errorMessage
+	 *
 	 */
-	void sendAlertSms(String phone, Long jobInfoId, String jobInfoName, String errorMessage);
+	void sendAlertSms(String phone, Long jobInfoId, String jobInfoName, Long jobSnapshotId, String errorMessage);
 
 
 }

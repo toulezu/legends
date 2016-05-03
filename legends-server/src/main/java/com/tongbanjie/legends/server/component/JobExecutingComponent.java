@@ -31,6 +31,7 @@ import java.util.Date;
 
 /**
  * 处理正在执行JOB组件
+ *
  * @author sunyi
  */
 @Component
@@ -71,12 +72,17 @@ public class JobExecutingComponent {
 			jobInfo = jobInfoDAO.findById(jobInfoId);
 
 			if (jobInfo == null) {
-				throw new RuntimeException("获取任务结果时，JobInfo == null");
+				logger.warn("JobSnapshot ID:[" + jobSnapshotId + "] 获取任务结果时，JobInfo == null");
+				jobFail("获取任务结果时，JobInfo == null", null, jobSnapshot);
+				return isJobExecuting;
 			}
 
 			if (!jobInfo.isActivity()) {
-				throw new RuntimeException("获取任务结果时，JobInfo 是不激活状态");
+				logger.warn("JobSnapshot ID:[" + jobSnapshotId + "] 获取任务结果时，JobInfo 是不激活状态");
+				jobFail("获取任务结果时，JobInfo 是不激活状态", jobInfo, jobSnapshot);
+				return isJobExecuting;
 			}
+
 			JobExecutingResponse exeRes = null;
 
 			try {
@@ -149,7 +155,7 @@ public class JobExecutingComponent {
 		}
 
 		if (jobInfo != null && jobInfo.getOwnerPhone() != null) {
-			smsService.sendAlertSms(jobInfo.getOwnerPhone(), jobInfo.getId(), jobInfo.getName(), errorMessage);
+			smsService.sendAlertSms(jobInfo.getOwnerPhone(), jobInfo.getId(), jobInfo.getName(), jobSnapshot.getId(), errorMessage);
 		}
 	}
 
