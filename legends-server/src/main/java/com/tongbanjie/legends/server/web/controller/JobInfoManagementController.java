@@ -1,30 +1,29 @@
 package com.tongbanjie.legends.server.web.controller;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import javax.annotation.Resource;
-
-import com.tongbanjie.legends.server.utils.Result;
-import org.apache.commons.lang.StringUtils;
+import com.tongbanjie.commons.lang.Result;
+import com.tongbanjie.legends.server.dao.JobInfoDAO;
+import com.tongbanjie.legends.server.dao.dataobject.JobInfo;
+import com.tongbanjie.legends.server.dao.query.JobInfoQuery;
+import com.tongbanjie.legends.server.service.JobInfoService;
+import com.tongbanjie.legends.server.utils.StringEditor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
-import com.tongbanjie.legends.server.dao.dataobject.JobInfo;
-import com.tongbanjie.legends.server.service.JobInfoService;
-import com.tongbanjie.legends.server.utils.StringEditor;
+import javax.annotation.Resource;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author chen.jie
@@ -33,12 +32,17 @@ import com.tongbanjie.legends.server.utils.StringEditor;
 @RequestMapping("/jobinfo")
 public class JobInfoManagementController {
 
+	private Logger logger = LoggerFactory.getLogger(JobInfoManagementController.class);
+
 	private static final int STATUS_SUCCESS = 0;
 
 	private static final int STATUS_FAILURE = 1;
 
 	@Resource
 	private JobInfoService jobInfoService;
+
+	@Autowired
+	private JobInfoDAO jobInfoDAO;
 
 	@InitBinder
 	public void initBinder(WebDataBinder binder) throws Exception {
@@ -64,21 +68,37 @@ public class JobInfoManagementController {
 
 	@RequestMapping("/list.htm")
 	public String selectList(@RequestParam(value = "name", required = false) String name,
-	                         @RequestParam(value = "group", required = false) String group, Model model) {
-		Result<List<JobInfo>> result = jobInfoService.selectListByNameAndGroup(name, group);
+	                         @RequestParam(value = "group", required = false) String group,
+	                         @RequestParam(value = "page", required = false) Integer page,
+	                         @RequestParam(value = "rows", required = false) Integer rows,
+	                         Model model) {
+
+		if (page == null) {
+			page = 1;
+		}
+		if (rows == null) {
+			rows = 20;
+		}
+
+		JobInfoQuery query = new JobInfoQuery();
+		query.setName(name);
+		query.setGroup(group);
+		query.setOffset((page - 1) * rows); // 第 1 页，数据中是第 0 页
+		query.setRows(rows);
+
+		List<JobInfo> list = jobInfoDAO.findByParam(query);
+		int count = jobInfoDAO.countByParam(query);
 
 		Map<String, String> p = new HashMap<String, String>();
 		p.put("name", name);
 		p.put("group", group);
 		model.addAttribute("p", p);
+		model.addAttribute("page", page);
+		model.addAttribute("rows", rows);
+		model.addAttribute("data", list);
+		model.addAttribute("pages", count / rows + 1);
+		model.addAttribute("status", STATUS_SUCCESS);
 
-		if (result.isSuccess()) {
-			model.addAttribute("status", STATUS_SUCCESS);
-			model.addAttribute("data", result.getData());
-		} else {
-			model.addAttribute("status", STATUS_FAILURE);
-			model.addAttribute("errorMsg", result.getErrorMsg());
-		}
 
 		return "jobInfo/list";
 	}
@@ -90,6 +110,14 @@ public class JobInfoManagementController {
 
 	@RequestMapping(value = "/add.htm", method = RequestMethod.POST)
 	public String addJobInfo(@ModelAttribute("data") JobInfo jobInfo, BindingResult br, ModelMap model) {
+		if (jobInfo.isActivity() == null) {
+			jobInfo.setActivity(false);
+		}
+
+		if (jobInfo.isCheckFinish() == null) {
+			jobInfo.setCheckFinish(false);
+		}
+
 		Result<Long> result = jobInfoService.addJobInfo(jobInfo);
 		if (result.isSuccess()) {
 			Result<JobInfo> sr = jobInfoService.selectJobInfoById(jobInfo.getId());
@@ -105,7 +133,6 @@ public class JobInfoManagementController {
 
 	@RequestMapping("/toedit/{id}.htm")
 	public String toUpdateJobInfo(@PathVariable("id") long id, Model model) {
-
 		Result<JobInfo> result = jobInfoService.selectJobInfoById(id);
 		if (result.isSuccess()) {
 			model.addAttribute("data", result.getData());
@@ -120,8 +147,27 @@ public class JobInfoManagementController {
 	@RequestMapping("/edit.htm")
 	public String updateJobInfo(@ModelAttribute("data") JobInfo jobInfo, Model model) {
 
+		// 如果前端不填写字符串，那么是 null， DAO 层不会更新
+		// 没有在 DAO 层做是因为其他地方传 null 就是指不想更新这个字段
+		// 理论上应该不区分 “” 和 null 的， 但没想到其他好的办法
 		if (jobInfo.getParam() == null) {
-			jobInfo.setParam(""); //如果前端不填写字符串，那么是 null， DAO 层不会更新
+			jobInfo.setParam("");
+		}
+
+		if (jobInfo.getDesc() == null) {
+			jobInfo.setDesc("");
+		}
+
+		if (jobInfo.getOwnerPhone() == null) {
+			jobInfo.setOwnerPhone("");
+		}
+
+		if (jobInfo.isActivity() == null) {
+			jobInfo.setActivity(false);
+		}
+
+		if (jobInfo.isCheckFinish() == null) {
+			jobInfo.setCheckFinish(false);
 		}
 
 		Result<Long> result = jobInfoService.updateJobInfo(jobInfo);

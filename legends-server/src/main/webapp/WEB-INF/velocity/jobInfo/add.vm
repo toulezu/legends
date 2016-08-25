@@ -38,7 +38,7 @@
 		<label for="cron" class="col-sm-2 control-label">Cron表达式:</label>
 		<div class="col-sm-4">
 			<input type="text"  class="form-control" id="cron" name="cron" value="$!data.cron" placeholder="必须填写" autocomplete="off" />
-			
+
 		</div>
 	</div>
 	<div class="form-group">
@@ -54,27 +54,27 @@
 		</div>
 		<div class="col-sm-4">
 			<button id="testBtn" class="btn btn-info" >测试服务器和任务类是否可用</button>
-		</div>	
+		</div>
 	</div>
 	<div class="form-group">
 		<label for="invokePolicy" class="col-sm-2 control-label">调用策略:</label>
     	<div class="col-sm-4">
     		<div class="radio radio-inline">
     			<label>
-    				<input type="radio" id="classPathPriority" name="invokePolicy" value="PRIORITY" 
+    				<input type="radio" id="classPathPriority" name="invokePolicy" value="PRIORITY"
 						#if(!$data.invokePolicy || "$!data.invokePolicy" == 'PRIORITY')
-							checked  
-						#end 
+							checked
+						#end
 					/>
     				顺序优先
                 </label>
             </div>
     		<div class="radio radio-inline">
     			<label>
-        			<input type="radio" id="classPathRandom" name="invokePolicy" value="RANDOM" 
+        			<input type="radio" id="classPathRandom" name="invokePolicy" value="RANDOM"
 					#if("$!data.invokePolicy" == 'RANDOM')
-						checked  
-					#end 
+						checked
+					#end
 					/>
         			随机选取
                 </label>
@@ -87,7 +87,7 @@
     		<div class="checkbox">
     			<label>
     				<input type="checkbox"  id="activity" name="activity"
-						#if(!$data || $data.activity)
+						#if($data && $data.activity)
 							checked
 						#end
 					/>
@@ -96,6 +96,62 @@
             </div>
 		</div>
     </div>
+	<div class="form-group inline">
+		<label for="checkFinish" class="col-sm-2 control-label">是否每日检查完成情况:</label>
+		<div class="col-sm-1">
+			<div class="checkbox">
+				<label>
+					<input type="checkbox"  id="checkFinish" name="checkFinish"
+						#if($data && $data.checkFinish)
+						   checked
+						#end
+							/>
+					检查
+				</label>
+			</div>
+		</div>
+        <div class="input-group" >
+            <lable class="control-label" >检查时间：</lable>
+            <input type="hidden" id="checkFinishTime" name="checkFinishTime"/>
+            <select  class="form-control" style="width: inherit" id="checkFinishTimeH" name="checkFinishTimeH" disabled >
+                <option value="00">00点</option>
+                <option value="01">01点</option>
+                <option value="02">02点</option>
+                <option value="03">03点</option>
+                <option value="04">04点</option>
+                <option value="05">05点</option>
+                <option value="06">06点</option>
+                <option value="07">07点</option>
+                <option value="08">08点</option>
+                <option value="09">09点</option>
+                <option value="10">10点</option>
+                <option value="11">11点</option>
+                <option value="12">12点</option>
+                <option value="13">13点</option>
+                <option value="14">14点</option>
+                <option value="15">15点</option>
+                <option value="16">16点</option>
+                <option value="17">17点</option>
+                <option value="18">18点</option>
+                <option value="19">19点</option>
+                <option value="20">20点</option>
+                <option value="21">21点</option>
+                <option value="22">22点</option>
+                <option value="23">23点</option>
+            </select>
+            <select  class="form-control" style="width: inherit;" id="checkFinishTimeM" name="checkFinishTimeM" disabled>
+                <option value="00">00分</option>
+                <option value="10">10分</option>
+                <option value="20">20分</option>
+                <option value="30">30分</option>
+                <option value="40">40分</option>
+                <option value="50">50分</option>
+            </select>
+            <label class="control-label" style="margin-left: 50px" >如果选择每日检查，则在指定时间，判断任务在当天是否执行成功过，没有则发短信报警</label>
+        </div>
+
+	</div>
+
 	<div class="form-group">
 		<label for="param" class="col-sm-2 control-label">参数:</label>
     	<div class="col-sm-4">
@@ -113,6 +169,9 @@
         <div class="col-sm-4">
             <input type="text"  class="form-control" id="ownerPhone" name="ownerPhone" value="$!data.ownerPhone" placeholder="任务执行异常时，会短信通知您" autocomplete="off" />
         </div>
+        <label class="control-label" >
+            支持多个手机号，使用<label style="color: red">英文半角逗号</label>分隔
+        </label>
     </div>
 	<div class="form-group">
 		<div class="col-sm-offset-2 col-sm-10">
@@ -124,9 +183,13 @@
 	</div>
 </form>
 
+
+
+
 #parse("/commons/alert.vm")
 
 <script >
+
 	$("#type").change(function(){
 		if("ONCE" == $(this).val()){
 			$("#cronDiv").hide();
@@ -138,11 +201,40 @@
 			$("#cronDiv").show();
 		}
 	});
-	
-	// 页面载入时,触发一次,因为回传已有值.
-	$("#type").change();
-	
-		
+	$("#type").change(); // 页面载入时,触发一次,因为回传已有值.
+
+	$("#checkFinish").change(function(){
+		if($(this).is(':checked')) {
+            $("#checkFinishTimeH").removeAttr("disabled");
+            $("#checkFinishTimeM").removeAttr("disabled");
+        }else{
+            $("#checkFinishTimeH").attr("disabled","");
+            $("#checkFinishTimeM").attr("disabled","");
+		}
+	})
+    $("#checkFinish").change();
+
+    // 回显 checkFinishTime
+    var checkFinishTime = "$!data.checkFinishTime";
+    if(checkFinishTime && checkFinishTime.concat(":")) {
+        var hm = checkFinishTime.split(":");
+        var h = hm[0];
+        var m = hm[1];
+
+        $("#checkFinishTimeH > option").each(function(){
+            if($(this).val() == h) {
+                $(this).attr("selected", "selected");
+            }
+        })
+
+        $("#checkFinishTimeM > option").each(function(){
+            if($(this).val() == m) {
+                $(this).attr("selected", "selected");
+            }
+        })
+    }
+
+
 	var liArray = $("#navBarUl li");
 	jQuery.each(liArray, function(i,n){
 			$(n).removeClass("active");
@@ -150,6 +242,7 @@
 	$("#jobInfoAddLi").addClass("active");
 	
 	$("form").submit( function () {
+
 		var name = $("#name").val()
 		if(name == ""){
 			showError("任务名称必须填写");
@@ -188,6 +281,8 @@
 			showError("任务类全路径必须填写");
 			return false;
 		}
+
+        $("#checkFinishTime").val($("#checkFinishTimeH").val() + ":" + $("#checkFinishTimeM").val());
 		
 		// 提交时,锁定Submit ,防止重复提交.
 		$("#submitBtn").attr("disabled","disabled");

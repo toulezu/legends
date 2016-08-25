@@ -1,6 +1,8 @@
 package com.tongbanjie.legends.server.component;
 
 import com.alibaba.fastjson.JSON;
+import com.tongbanjie.commons.lang.Result;
+import com.tongbanjie.commons.util.HttpClientUtils;
 import com.tongbanjie.legends.client.enums.MethodFlag;
 import com.tongbanjie.legends.client.model.JobInvokeResponse;
 import com.tongbanjie.legends.client.model.JobRequest;
@@ -15,8 +17,6 @@ import com.tongbanjie.legends.server.dao.dataobject.enums.JobInfoTypeEnum;
 import com.tongbanjie.legends.server.dao.dataobject.enums.JobSnapshotStatusEnum;
 import com.tongbanjie.legends.server.service.JobInfoService;
 import com.tongbanjie.legends.server.service.SmsService;
-import com.tongbanjie.legends.server.utils.HttpClientUtils;
-import com.tongbanjie.legends.server.utils.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +29,7 @@ import java.util.List;
 
 /**
  * @author sunyi
+ *         Created on 15/11/4
  */
 @Component
 public class JobInvokeComponent {

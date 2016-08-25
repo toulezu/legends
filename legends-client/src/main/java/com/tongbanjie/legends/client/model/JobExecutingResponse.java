@@ -1,8 +1,8 @@
 package com.tongbanjie.legends.client.model;
 
-import java.io.Serializable;
-
 import com.tongbanjie.legends.client.enums.JobStatus;
+
+import java.io.Serializable;
 
 /**
  * 封装了请求执行结果等相关参数的DO

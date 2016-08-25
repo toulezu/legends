@@ -45,7 +45,7 @@
 </nav>
 
 <h4 >
-	<small>如果没有查询条件,只会显示最近100条记录.</small>
+	<small>最多显示最近100条记录.</small>
 </h4>
 
 
@@ -65,10 +65,7 @@
 			状态
         </th>
 		<th style="text-align:center" >
-			IP
-        </th>
-		<th style="text-align:center" >
-			URL
+			任务服务器 IP
         </th>
 		<th style="text-align:center" >
 			任务耗时(秒)
@@ -77,13 +74,19 @@
 			创建时间
         </th>
 		<th style="text-align:center" >
-			最后变更时间
+			实际开始时间
+        </th>
+        <th style="text-align:center" >
+            实际结束时间
         </th>
 		<th style="width:55px;text-align:center" >
 			停止
         </th>
 		<th style="width:55px;text-align:center" >
 			详情
+        </th>
+        <th style="width:55px;text-align:center" >
+            任务
         </th>
     </tr>
 	</thead>
@@ -109,16 +112,16 @@
 			$!e.ip
         </td>
 		<td >
-			$!e.url
-        </td>
-		<td >
 			$!e.timeConsume
         </td>
 		<td >
 			$!datetool.format('yyyy-MM-dd HH:mm:ss',$!e.createTime)
         </td>
+        <td >
+			$!datetool.format('yyyy-MM-dd HH:mm:ss',$!e.actualStartTime)
+        </td>
 		<td >
-			$!datetool.format('yyyy-MM-dd HH:mm:ss',$!e.modifyTime)
+			$!datetool.format('yyyy-MM-dd HH:mm:ss',$!e.actualFinishTime)
         </td>
 		<td align="center">
 			#if("$!e.status" == "EXECUTING")
@@ -132,10 +135,17 @@
 		
 		<td >
 			<a href="$ac.contextPath/jobsnapshot/view/${e.id}.htm">
-    			<button id="viewBtn" type="button" class="btn btn-default btn" onclick="view()">
+    			<button id="viewBtn" type="button" class="btn btn-default btn"">
     				<span class="glyphicon glyphicon-eye-open"></span> 
     			</button>
 			</a>
+        </td>
+        <td >
+            <a href="$ac.contextPath/jobinfo/view/${e.jobInfoId}.htm">
+                <button id="viewBtn" type="button" class="btn btn-default btn"">
+                    <span class="glyphicon glyphicon-eye-open"></span>
+                </button>
+            </a>
         </td>
     </tr>
 	#end

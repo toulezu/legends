@@ -27,5 +27,5 @@ public interface Job {
 	 * 
 	 * @return String
 	 */
-	public String execute(String param) throws Exception;
+	public String execute(String param);
 }

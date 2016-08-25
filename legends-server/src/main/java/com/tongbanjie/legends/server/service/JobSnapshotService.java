@@ -2,9 +2,9 @@ package com.tongbanjie.legends.server.service;
 
 import java.util.List;
 
+import com.tongbanjie.commons.lang.Result;
 import com.tongbanjie.legends.client.model.JobStopResponse;
 import com.tongbanjie.legends.server.dao.dataobject.JobSnapshot;
-import com.tongbanjie.legends.server.utils.Result;
 
 /**
  * 

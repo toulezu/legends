@@ -1,15 +1,9 @@
 package com.tongbanjie.legends.server.web.controller;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-
-import com.tongbanjie.legends.server.utils.Result;
+import com.tongbanjie.commons.lang.Result;
+import com.tongbanjie.legends.server.dao.dataobject.JobInfoHistory;
+import com.tongbanjie.legends.server.service.JobInfoHistoryService;
+import com.tongbanjie.legends.server.utils.StringEditor;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,11 +12,14 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.tongbanjie.legends.server.dao.dataobject.JobInfoHistory;
-import com.tongbanjie.legends.server.service.JobInfoHistoryService;
-import com.tongbanjie.legends.server.utils.StringEditor;
+import javax.annotation.Resource;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 
@@ -65,7 +62,10 @@ public class JobInfoHistoryManagementController {
 	@RequestMapping("/list.htm")
 	public String selectList(@RequestParam(value="name",required=false)String name, 
 			@RequestParam(value="group",required=false)String group, Model model) {
-		Result<List<JobInfoHistory>> result = jobInfoHistoryService.selectListByNameAndGroup(name, group);
+
+		int limit = 100; //默认最多一百条
+
+		Result<List<JobInfoHistory>> result = jobInfoHistoryService.selectListByNameAndGroup(name, group, limit);
 		
 		Map<String,String> p = new HashMap<String,String>();
 		p.put("name", name);

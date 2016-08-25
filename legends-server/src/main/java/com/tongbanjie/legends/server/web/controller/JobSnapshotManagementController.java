@@ -1,17 +1,11 @@
 package com.tongbanjie.legends.server.web.controller;
 
-import java.net.SocketTimeoutException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-
-import com.tongbanjie.legends.server.utils.Result;
-import org.apache.commons.lang.StringUtils;
+import com.alibaba.fastjson.JSON;
+import com.tongbanjie.commons.lang.Result;
+import com.tongbanjie.legends.client.model.JobStopResponse;
+import com.tongbanjie.legends.server.dao.dataobject.JobSnapshot;
+import com.tongbanjie.legends.server.service.JobSnapshotService;
+import com.tongbanjie.legends.server.utils.StringEditor;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,17 +13,16 @@ import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
-import com.alibaba.fastjson.JSON;
-import com.tongbanjie.legends.client.model.JobStopResponse;
-import com.tongbanjie.legends.server.dao.dataobject.JobSnapshot;
-import com.tongbanjie.legends.server.service.JobSnapshotService;
-import com.tongbanjie.legends.server.utils.StringEditor;
+import javax.annotation.Resource;
+import java.net.SocketTimeoutException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 
@@ -75,13 +68,8 @@ public class JobSnapshotManagementController {
 	public String selectList(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "group", required = false) String group,
 			@RequestParam(value = "status", required = false) String status, Model model) {
 
-		Result<List<JobSnapshot>> result = null;
-		if (StringUtils.isBlank(name) && StringUtils.isBlank(group) && StringUtils.isBlank(status)) {
-			// 如果没有查询条件,默认只展现前100条.
-			result = jobSnapshotService.selectListByNameAndGroupAndStatus(name, group, status, 100);
-		} else {
-			result = jobSnapshotService.selectListByNameAndGroupAndStatus(name, group, status);
-		}
+		// 默认只展现前100条.
+		Result<List<JobSnapshot>> result = jobSnapshotService.selectListByNameAndGroupAndStatus(name, group, status, 100);
 
 		Map<String, String> p = new HashMap<String, String>();
 		p.put("name", name);

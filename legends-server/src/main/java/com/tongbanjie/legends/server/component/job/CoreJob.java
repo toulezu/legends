@@ -14,11 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
-/**
- * 核心任务线程,抽象处理每一个任务。
- *
- * @author sunyi
- */
 public class CoreJob implements Job {
 
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -52,7 +47,7 @@ public class CoreJob implements Job {
 
 		try {
 			jobSnapshot = jobInvokeComponent.invoke(jobInfoId, jobSnapshot.getId());
-		} catch (Exception e) {
+		} catch(Exception e) {
 			logger.error("jobInvokeComponent.invoke error, jobInfoId: " + jobInfoId, e);
 		}
 		if (!JobSnapshotStatusEnum.EXECUTING.equals(jobSnapshot.getStatus())) {

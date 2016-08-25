@@ -20,10 +20,13 @@ CREATE TABLE `job_info` (
   `param` varchar(255) DEFAULT NULL,
   `latest_trigger_time` datetime DEFAULT NULL COMMENT '上一次触发时间',
   `latest_server_address` varchar(100) DEFAULT NULL COMMENT '上一次触发任务的服务器地址',
-  `owner_phone` varchar(20) DEFAULT NULL COMMENT '负责人手机号',
+  `owner_phone` varchar(255) DEFAULT NULL COMMENT '负责人手机号',
+  `is_check_finish` tinyint(4) DEFAULT '0' COMMENT '是否每日检查完成情况,0:false,1:true',
+  `check_finish_time` varchar(5) NOT NULL DEFAULT '' COMMENT '检查完成时间，HH:mm 格式',
   PRIMARY KEY (`id`),
   UNIQUE KEY `JOB_INFO_UK_NAME_GROUP` (`name`,`group`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 -- ----------------------------
 --  Table structure for `job_info_history`
@@ -47,9 +50,12 @@ CREATE TABLE `job_info_history` (
   `param` varchar(255) DEFAULT NULL,
   `latest_trigger_time` datetime DEFAULT NULL COMMENT '上一次触发时间',
   `latest_server_address` varchar(100) DEFAULT NULL COMMENT '上一次触发任务的服务器地址',
-  `owner_phone` varchar(20) DEFAULT NULL COMMENT '负责人手机号',
+  `owner_phone` varchar(255) DEFAULT NULL COMMENT '负责人手机号',
+  `is_check_finish` tinyint(4) DEFAULT '0' COMMENT '是否每日检查完成情况,0:false,1:true',
+  `check_finish_time` varchar(5) DEFAULT NULL COMMENT '检查完成时间，HH:mm 格式',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 -- ----------------------------
 --  Table structure for `job_snapshot`
@@ -69,12 +75,16 @@ CREATE TABLE `job_snapshot` (
   `create_time` datetime DEFAULT NULL,
   `modify_time` datetime DEFAULT NULL,
   `server_address` varchar(100) DEFAULT NULL COMMENT '触发任务的服务器地址',
+  `actual_start_time` datetime DEFAULT NULL COMMENT '任务实际开始时间',
+  `actual_finish_time` datetime DEFAULT NULL COMMENT '任务实际开始时间',
   PRIMARY KEY (`id`),
   KEY `IDX_NAME_GROUP_STATUS` (`name`,`group`,`status`),
   KEY `IDX_GROUP_STATUS` (`group`,`status`),
   KEY `IDX_STATUS` (`status`),
   KEY `IDX_JOB_INFO_ID` (`job_info_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 
 -- ----------------------------
 --  Table structure for `job_snapshot_history`
@@ -98,3 +108,4 @@ CREATE TABLE `job_snapshot_history` (
   PRIMARY KEY (`id`),
   KEY `job_info_id` (`job_info_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+

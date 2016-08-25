@@ -19,6 +19,10 @@
   </div><!-- /.navbar-collapse -->
 </nav>
 
+<h4 >
+    <small>最多显示最近100条记录.</small>
+</h4>
+
 <table class="table table-condensed table-bordered table-striped" style="text-align:center" >
 	<thead>
 	<tr style="text-align:center" >

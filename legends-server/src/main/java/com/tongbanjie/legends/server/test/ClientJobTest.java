@@ -11,7 +11,7 @@ public class ClientJobTest extends AbstractJob {
 
 	@Override
 	public String execute(String param) {
-		System.out.println(param);
+		System.out.println("param: " + param);
 
 		try {
 			TimeUnit.SECONDS.sleep(10L);
@@ -19,9 +19,8 @@ public class ClientJobTest extends AbstractJob {
 			e.printStackTrace();
 		}
 
-		System.out.println("==================");
+		return "success";
 
-		return "SUCC";
 	}
 
 }

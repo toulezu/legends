@@ -2,8 +2,8 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.tongbanjie.legends</groupId>
 	<artifactId>legends</artifactId>
-	<version>2.0-os</version>
-	<description>任务调度组件</description>
+	<version>1.0-os</version>
+	<description>铜板街-统一调度组件-开源版本</description>
 	<packaging>pom</packaging>
 
 	<build>
@@ -46,9 +46,16 @@
 		</plugins>
 	</build>
 
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
 	<modules>
 		<module>legends-server</module>
 		<module>legends-client</module>
+		<module>legends-monitor</module>
+		<module>legends-dao</module>
 	</modules>
+
 
 </project>

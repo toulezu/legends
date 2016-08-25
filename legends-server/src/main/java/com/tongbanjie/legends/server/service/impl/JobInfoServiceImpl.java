@@ -1,35 +1,33 @@
 package com.tongbanjie.legends.server.service.impl;
 
-import java.text.ParseException;
-import java.util.Date;
-import java.util.List;
-
-import javax.annotation.Resource;
-
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.tongbanjie.commons.lang.Result;
+import com.tongbanjie.commons.util.HttpClientUtils;
+import com.tongbanjie.legends.client.enums.MethodFlag;
+import com.tongbanjie.legends.client.model.JobRequest;
+import com.tongbanjie.legends.client.model.JobTestResponse;
+import com.tongbanjie.legends.server.component.SchedulerWrapper;
 import com.tongbanjie.legends.server.component.job.CoreJob;
-import com.tongbanjie.legends.server.utils.HttpClientUtils;
-import com.tongbanjie.legends.server.utils.Result;
+import com.tongbanjie.legends.server.dao.JobInfoDAO;
+import com.tongbanjie.legends.server.dao.JobInfoHistoryDAO;
+import com.tongbanjie.legends.server.dao.dataobject.JobInfo;
+import com.tongbanjie.legends.server.dao.dataobject.JobInfoHistory;
+import com.tongbanjie.legends.server.dao.dataobject.enums.JobInfoTypeEnum;
+import com.tongbanjie.legends.server.dao.query.JobInfoQuery;
+import com.tongbanjie.legends.server.service.JobInfoService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateUtils;
 import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.tongbanjie.legends.client.enums.MethodFlag;
-import com.tongbanjie.legends.client.model.JobRequest;
-import com.tongbanjie.legends.client.model.JobTestResponse;
-import com.tongbanjie.legends.server.component.SchedulerWrapper;
-import com.tongbanjie.legends.server.dao.JobInfoDAO;
-import com.tongbanjie.legends.server.dao.JobInfoHistoryDAO;
-import com.tongbanjie.legends.server.dao.dataobject.JobInfo;
-import com.tongbanjie.legends.server.dao.dataobject.JobInfoHistory;
-import com.tongbanjie.legends.server.dao.dataobject.enums.JobInfoTypeEnum;
-import com.tongbanjie.legends.server.service.JobInfoService;
+import javax.annotation.Resource;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author chen.jie
@@ -88,7 +86,7 @@ public class JobInfoServiceImpl implements JobInfoService {
 				ParseException parseExc = (ParseException) e.getCause();
 				result.setErrorMsg(parseExc.getMessage());
 			} else {
-				result.setErrorMsg("系统异常，请联系开发人员！");
+				result.setErrorMsg("系统异常，请联系开发人员！" + e.getMessage());
 			}
 			result.setSuccess(false);
 		}
@@ -116,7 +114,7 @@ public class JobInfoServiceImpl implements JobInfoService {
 		} catch (Exception e) {
 			LOG.error("Legends SysException: ", e);
 			result.setSuccess(false);
-			result.setErrorMsg("系统异常，请联系开发人员！");
+			result.setErrorMsg("系统异常，请联系开发人员！" + e.getMessage());
 		}
 
 		return result;
@@ -128,6 +126,13 @@ public class JobInfoServiceImpl implements JobInfoService {
 
 		try {
 			trim(jobInfo);
+
+			if (!checkJobInfo(jobInfo)) {
+				result.setSuccess(false);
+				result.setErrorMsg("参数不合法！");
+				return result;
+			}
+
 			JobInfo oldJobInfo = jobInfoDAO.findById(jobInfo.getId());
 
 			int i = jobInfoDAO.updateById(jobInfo);
@@ -172,7 +177,7 @@ public class JobInfoServiceImpl implements JobInfoService {
 				ParseException parseExc = (ParseException) e.getCause();
 				result.setErrorMsg(parseExc.getMessage());
 			} else {
-				result.setErrorMsg("系统异常，请联系开发人员！");
+				result.setErrorMsg("系统异常，请联系开发人员！" + e.getMessage());
 			}
 			result.setSuccess(false);
 		}
@@ -197,24 +202,7 @@ public class JobInfoServiceImpl implements JobInfoService {
 		} catch (Exception e) {
 			LOG.error("Legends SysException: ", e);
 			result.setSuccess(false);
-			result.setErrorMsg("系统异常，请联系开发人员！");
-		}
-
-		return result;
-	}
-
-	@Override
-	public Result<List<JobInfo>> selectList(JobInfo jobInfo) {
-		Result<List<JobInfo>> result = new Result<List<JobInfo>>();
-
-		try {
-			List<JobInfo> jobInfoList = jobInfoDAO.getList(jobInfo);
-			result.setSuccess(true);
-			result.setData(jobInfoList);
-		} catch (Exception e) {
-			LOG.error("Legends SysException: ", e);
-			result.setSuccess(false);
-			result.setErrorMsg("系统异常，请联系开发人员！");
+			result.setErrorMsg("系统异常，请联系开发人员！" + e.getMessage());
 		}
 
 		return result;
@@ -225,7 +213,7 @@ public class JobInfoServiceImpl implements JobInfoService {
 		Result<List<JobInfo>> result = new Result<List<JobInfo>>();
 
 		try {
-			List<JobInfo> jobInfoList = jobInfoDAO.getListByNameAndGroup(name, group);
+			List<JobInfo> jobInfoList = jobInfoDAO.findByParam(new JobInfoQuery(name, group));
 			result.setSuccess(true);
 			result.setData(jobInfoList);
 		} catch (Exception e) {
@@ -262,6 +250,33 @@ public class JobInfoServiceImpl implements JobInfoService {
 		if (StringUtils.isBlank(jobInfo.getUrls())) {
 			return false;
 		}
+
+		if (jobInfo.isCheckFinish() != null && jobInfo.isCheckFinish()) {
+			String checkFinishTime = jobInfo.getCheckFinishTime();
+			if (StringUtils.isBlank(checkFinishTime)) {
+				// 如果要检查是否完成， 则需要设置 检查时间
+				return false;
+			}
+		}
+
+		String checkFinishTime = jobInfo.getCheckFinishTime();
+		if (!StringUtils.isBlank(checkFinishTime)) {
+			// 如果检查时间不为空， 则必须为  HH:mm  格式，0可省略
+
+			String[] split = checkFinishTime.split(":");
+
+			if (split.length != 2) {
+				return false;
+			}
+
+			if (Integer.valueOf(split[0]) < 0 || Integer.valueOf(split[0]) >= 24) {
+				return false;
+			}
+
+			if (Integer.valueOf(split[1]) < 0 || Integer.valueOf(split[1]) >= 60) {
+				return false;
+			}
+		}
 		return true;
 	}
 
@@ -270,6 +285,8 @@ public class JobInfoServiceImpl implements JobInfoService {
 		BeanUtils.copyProperties(jobInfo, jobInfoHistory);
 		jobInfoHistory.setId(null);
 		jobInfoHistory.setJobInfoId(jobInfo.getId());
+		jobInfoHistory.setActivity(jobInfo.isActivity());
+		jobInfoHistory.setCheckFinish(jobInfo.isCheckFinish());
 		return jobInfoHistory;
 	}
 
@@ -342,7 +359,7 @@ public class JobInfoServiceImpl implements JobInfoService {
 						return r;
 					}
 				} catch (Exception e) {
-					LOG.error("Test action fail.", e);
+					LOG.warn("Test action fail.", e);
 					// 可能连接失败.
 					r.setSuccess(false);
 					r.setErrorMsg(url + ": 无效");
@@ -356,7 +373,7 @@ public class JobInfoServiceImpl implements JobInfoService {
 		} catch (Exception e) {
 			LOG.error("", e);
 			r.setSuccess(false);
-			r.setErrorMsg("系统异常，请联系开发人员！");
+			r.setErrorMsg("系统异常，请联系开发人员！" + e.getMessage());
 			return r;
 		}
 	}

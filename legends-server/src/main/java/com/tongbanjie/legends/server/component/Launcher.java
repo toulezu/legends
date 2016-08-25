@@ -1,15 +1,11 @@
 package com.tongbanjie.legends.server.component;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Resource;
-
 import com.tongbanjie.legends.server.component.execute.ExecutingJobHolder;
+import com.tongbanjie.legends.server.component.execute.GetJobResultThread;
+import com.tongbanjie.legends.server.dao.JobInfoDAO;
+import com.tongbanjie.legends.server.dao.JobSnapshotDAO;
+import com.tongbanjie.legends.server.dao.dataobject.JobInfo;
+import com.tongbanjie.legends.server.dao.dataobject.JobSnapshot;
 import org.quartz.*;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
@@ -18,11 +14,13 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.tongbanjie.legends.server.component.execute.GetJobResultThread;
-import com.tongbanjie.legends.server.dao.JobInfoDAO;
-import com.tongbanjie.legends.server.dao.JobSnapshotDAO;
-import com.tongbanjie.legends.server.dao.dataobject.JobInfo;
-import com.tongbanjie.legends.server.dao.dataobject.JobSnapshot;
+import javax.annotation.Resource;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class Launcher implements InitializingBean {
@@ -92,7 +90,7 @@ public class Launcher implements InitializingBean {
 			logger.error("loadJobInfo fail， 获取已经 schedule 的 job 发生异常", e);
 		}
 
-		List<JobInfo> jobInfoList = jobInfoDAO.getList(null);
+		List<JobInfo> jobInfoList = jobInfoDAO.findByParam(null);
 		for (JobInfo jobInfo : jobInfoList) {
 			try {
 

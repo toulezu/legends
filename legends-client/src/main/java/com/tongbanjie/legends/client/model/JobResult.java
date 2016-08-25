@@ -1,6 +1,7 @@
 package com.tongbanjie.legends.client.model;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 封装了job执行结果等相关信息，通过Response返回给server端
@@ -35,6 +36,10 @@ public class JobResult implements Serializable {
 	 */
 	private String result;
 
+	private Date actualStartTime; //任务线程真实开始运行时间
+
+	private Date actualFinishTime; //任务线程真实开始运行时间
+
 	public long getJobDetailId() {
 		return jobDetailId;
 	}
@@ -67,4 +72,19 @@ public class JobResult implements Serializable {
 		this.result = result;
 	}
 
+	public Date getActualStartTime() {
+		return actualStartTime;
+	}
+
+	public void setActualStartTime(Date actualStartTime) {
+		this.actualStartTime = actualStartTime;
+	}
+
+	public Date getActualFinishTime() {
+		return actualFinishTime;
+	}
+
+	public void setActualFinishTime(Date actualFinishTime) {
+		this.actualFinishTime = actualFinishTime;
+	}
 }

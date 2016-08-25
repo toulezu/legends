@@ -1,10 +1,9 @@
 package com.tongbanjie.legends.server.service;
 
-import java.util.Date;
-import java.util.List;
-
+import com.tongbanjie.commons.lang.Result;
 import com.tongbanjie.legends.server.dao.dataobject.JobInfo;
-import com.tongbanjie.legends.server.utils.Result;
+
+import java.util.List;
 
 /**
  * 
@@ -49,7 +48,6 @@ public interface JobInfoService {
 	 * errorMsg = result.getErrorMsg();
 	 * </pre>
 	 * 
-	 * @param jobInfo
 	 * @return Result<Boolean>
 	 * 
 	 */
@@ -85,26 +83,6 @@ public interface JobInfoService {
 
 	Result<JobInfo> selectJobInfoById(long id);
 
-	/**
-	 * 根据查询条件动态查找符合条件的数据
-	 * 
-	 * <p>成功：</p>
-	 * <pre>
-	 * result.isSuccess() = true;
-	 * V = result.getData();
-	 * </pre>
-	 * 
-	 * <p>失败：</p>
-	 * <pre>
-	 * result.isSuccess() = false;
-	 * errorMsg = result.getErrorMsg();
-	 * </pre>
-	 * 
-	 * @param jobInfo
-	 * @return
-	 */
-	Result<List<JobInfo>> selectList(JobInfo jobInfo);
-	
 	/**
 	 * 根据name和group查询,默认展示任务列表也会用到, name 或 group 可以为 null，
 	 * 

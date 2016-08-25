@@ -1,9 +1,9 @@
 package com.tongbanjie.legends.server.service;
 
-import java.util.List;
-
+import com.tongbanjie.commons.lang.Result;
 import com.tongbanjie.legends.server.dao.dataobject.JobInfoHistory;
-import com.tongbanjie.legends.server.utils.Result;
+
+import java.util.List;
 
 /**
  * 
@@ -19,7 +19,7 @@ public interface JobInfoHistoryService {
 	 * @param group
 	 * @return
 	 */
-	Result<List<JobInfoHistory>> selectListByNameAndGroup(String name, String group);
+	Result<List<JobInfoHistory>> selectListByNameAndGroup(String name, String group, int limit);
 	
 	Result<JobInfoHistory> selectJobInfoHistoryById(long id);
 

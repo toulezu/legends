@@ -1,23 +1,8 @@
 package com.tongbanjie.legends.server.service.impl;
 
-import java.net.SocketTimeoutException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
-import javax.annotation.Resource;
-
-import com.tongbanjie.legends.server.utils.HttpClientUtils;
-import com.tongbanjie.legends.server.utils.Result;
-import org.apache.http.conn.ConnectTimeoutException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.alibaba.fastjson.JSON;
+import com.tongbanjie.commons.lang.Result;
+import com.tongbanjie.commons.util.HttpClientUtils;
 import com.tongbanjie.legends.client.enums.MethodFlag;
 import com.tongbanjie.legends.client.model.JobRequest;
 import com.tongbanjie.legends.client.model.JobStopResponse;
@@ -27,6 +12,18 @@ import com.tongbanjie.legends.server.dao.dataobject.JobInfo;
 import com.tongbanjie.legends.server.dao.dataobject.JobSnapshot;
 import com.tongbanjie.legends.server.dao.dataobject.enums.JobSnapshotStatusEnum;
 import com.tongbanjie.legends.server.service.JobSnapshotService;
+import org.apache.http.conn.ConnectTimeoutException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.net.SocketTimeoutException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author chen.jie
@@ -124,7 +121,10 @@ public class JobSnapshotServiceImpl implements JobSnapshotService {
 	}
 
 	@Override
-	@Transactional
+	/**
+	 * 清理一个月前的数据
+	 * 把事务去掉是因为，如果在运行这个方法，获取任务结果时 select id for update ，与这个一起执行会导致 MySQL 死锁
+	 */
 	public Result<Boolean> dataCleanOneMonthAgo() {
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.MONTH, -1);
@@ -146,7 +146,10 @@ public class JobSnapshotServiceImpl implements JobSnapshotService {
 	}
 
 	@Override
-	@Transactional
+	/**
+	 * 清理一周前的数据
+	 * 把事务去掉是因为，如果在运行这个方法，获取任务结果时 select id for update ，与这个一起执行会导致 MySQL 死锁
+	 */
 	public Result<Boolean> dataCleanOneWeekAgo() {
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DAY_OF_YEAR, -7);
