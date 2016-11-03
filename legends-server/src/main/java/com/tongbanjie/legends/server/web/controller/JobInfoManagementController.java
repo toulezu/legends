@@ -81,8 +81,8 @@ public class JobInfoManagementController {
 		}
 
 		JobInfoQuery query = new JobInfoQuery();
-		query.setName(name);
-		query.setGroup(group);
+		query.setLikeName(name);
+		query.setLikeGroup(group);
 		query.setOffset((page - 1) * rows); // 第 1 页，数据中是第 0 页
 		query.setRows(rows);
 
@@ -96,7 +96,17 @@ public class JobInfoManagementController {
 		model.addAttribute("page", page);
 		model.addAttribute("rows", rows);
 		model.addAttribute("data", list);
-		model.addAttribute("pages", count / rows + 1);
+
+		int pages; // 总页数
+		if(count == 0 ) {
+			pages = 1;
+		}else if (count % rows == 0) {
+			pages = count / rows;
+		}else {
+			pages = count / rows + 1;
+		}
+
+		model.addAttribute("pages", pages);
 		model.addAttribute("status", STATUS_SUCCESS);
 
 
@@ -218,6 +228,29 @@ public class JobInfoManagementController {
 
 	@RequestMapping("/execute.htm")
 	public String execute(@ModelAttribute("data") JobInfo jobInfo, Model model) {
+
+		// 如果前端不填写字符串，那么是 null， DAO 层不会更新
+		// 没有在 DAO 层做是因为其他地方传 null 就是指不想更新这个字段
+		// 理论上应该不区分 “” 和 null 的， 但没想到其他好的办法
+		if (jobInfo.getParam() == null) {
+			jobInfo.setParam("");
+		}
+
+		if (jobInfo.getDesc() == null) {
+			jobInfo.setDesc("");
+		}
+
+		if (jobInfo.getOwnerPhone() == null) {
+			jobInfo.setOwnerPhone("");
+		}
+
+		if (jobInfo.isActivity() == null) {
+			jobInfo.setActivity(false);
+		}
+
+		if (jobInfo.isCheckFinish() == null) {
+			jobInfo.setCheckFinish(false);
+		}
 
 		Result<Long> updateResult = jobInfoService.updateJobInfo(jobInfo);
 		if (!updateResult.isSuccess()) {

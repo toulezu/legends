@@ -2,16 +2,12 @@ package com.tongbanjie.legends.server.dao.test;
 
 import com.tongbanjie.legends.server.dao.JobSnapshotDAO;
 import com.tongbanjie.legends.server.dao.dataobject.JobSnapshot;
-import com.tongbanjie.legends.server.dao.dataobject.enums.JobSnapshotStatusEnum;
-import com.tongbanjie.legends.server.dao.query.JobSnapshotQuery;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
-
-import java.util.List;
 
 /**
  * @author sunyi
@@ -27,14 +23,22 @@ public class JobSnapshotDAOTest {
 	@Test
 	public void mainTest() {
 		Assert.notNull(dao);
+//
+//		JobSnapshotQuery param = new JobSnapshotQuery();
+//		param.setGroup("TEST");
+//		param.setStatus(JobSnapshotStatusEnum.COMPLETED);
+//		param.setRows(10);
+//		List<JobSnapshot> byParam = dao.findByParam(param);
+//
+//		System.out.println(byParam.size());
 
-		JobSnapshotQuery param = new JobSnapshotQuery();
-		param.setGroup("TEST");
-		param.setStatus(JobSnapshotStatusEnum.COMPLETED);
-		param.setRows(10);
-		List<JobSnapshot> byParam = dao.findByParam(param);
+		JobSnapshot jobSnapshot = new JobSnapshot();
+		jobSnapshot.setId(2016114L);
+		jobSnapshot.setDetail("123123\n");
 
-		System.out.println(byParam.size());
+		int i = dao.updateByIdAndConcatDetail(jobSnapshot);
+		System.out.println(i);
+
 
 	}
 }

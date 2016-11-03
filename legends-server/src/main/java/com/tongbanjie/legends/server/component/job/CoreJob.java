@@ -5,7 +5,6 @@ import com.tongbanjie.legends.server.component.JobStartComponent;
 import com.tongbanjie.legends.server.component.SpringApplicationContextAware;
 import com.tongbanjie.legends.server.component.execute.ExecutingJobHolder;
 import com.tongbanjie.legends.server.dao.dataobject.JobSnapshot;
-import com.tongbanjie.legends.server.dao.dataobject.enums.JobSnapshotStatusEnum;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -45,19 +44,21 @@ public class CoreJob implements Job {
 			return;
 		}
 
+		Long jobSnapshotId = jobSnapshot.getId();
+		boolean isInvokeSuccess = false;
 		try {
-			jobSnapshot = jobInvokeComponent.invoke(jobInfoId, jobSnapshot.getId());
+			isInvokeSuccess = jobInvokeComponent.invoke(jobInfoId, jobSnapshotId);
 		} catch(Exception e) {
 			logger.error("jobInvokeComponent.invoke error, jobInfoId: " + jobInfoId, e);
 		}
-		if (!JobSnapshotStatusEnum.EXECUTING.equals(jobSnapshot.getStatus())) {
+		if (!isInvokeSuccess) {
 			// invoke 过程中发生异常或者某些问题，不再继续
 			return;
 		}
 
-		boolean offerLast = ExecutingJobHolder.offerLastExecutingJob(jobSnapshot.getId());
+		boolean offerLast = ExecutingJobHolder.offerLastExecutingJob(jobSnapshotId);
 		if (!offerLast) {
-			logger.warn("任务执行中,再次将任务添加到队列失败, jobSnapshotId: " + jobSnapshot.getId());
+			logger.warn("任务执行中,再次将任务添加到队列失败, jobSnapshotId: " + jobSnapshotId);
 		}
 
 	}

@@ -49,6 +49,12 @@
             <if test="group != null" >
                 AND `group` = #{group}
             </if>
+            <if test="likeName != null" >
+                AND `name` like CONCAT('%',#{likeName},'%')
+            </if>
+            <if test="likeGroup != null" >
+                AND `group` like CONCAT('%',#{likeGroup},'%')
+            </if>
             <if test="isActivity != null">
                 AND `is_activity` = #{isActivity}
             </if>
@@ -66,6 +72,12 @@
             </if>
             <if test="group != null" >
                 AND `group` = #{group}
+            </if>
+            <if test="likeName != null" >
+                AND `name` like CONCAT('%',#{likeName},'%')
+            </if>
+            <if test="likeGroup != null" >
+                AND `group` like CONCAT('%',#{likeGroup},'%')
             </if>
             <if test="isActivity != null">
                 AND `is_activity` = #{isActivity}

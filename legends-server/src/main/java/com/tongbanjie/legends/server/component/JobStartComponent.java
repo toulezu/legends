@@ -83,7 +83,7 @@ public class JobStartComponent {
 		jobSnapshot.setGroup(jobInfo.getGroup());
 		jobSnapshot.setStatus(JobSnapshotStatusEnum.INIT);
 		jobSnapshot.setServerAddress(NetUtils.getLocalAddressIp());
-		jobSnapshot.setDetail("初始化 " + getNowTime() + "\n");
+		jobSnapshot.setDetail("任务初始化 " + getNowTime() + "\n");
 		jobSnapshotDAO.insert(jobSnapshot);
 
 		return jobSnapshot;

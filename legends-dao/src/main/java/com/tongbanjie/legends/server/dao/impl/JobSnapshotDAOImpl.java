@@ -49,6 +49,23 @@ public class JobSnapshotDAOImpl extends SqlSessionDaoSupport implements JobSnaps
 	}
 
 	@Override
+	public int updateByIdAndConcatDetail(JobSnapshot jobSnapshot) {
+		if (jobSnapshot == null) {
+			return 0;
+		}
+
+		if (jobSnapshot.getId() == null) {
+			throw new RuntimeException("id 不能为空");
+		}
+
+		if (jobSnapshot.getModifyTime() == null) {
+			jobSnapshot.setModifyTime(new Date());
+		}
+
+		return getSqlSession().update("JobSnapshot.updateByIdAndConcatDetail", jobSnapshot);
+	}
+
+	@Override
 	@SuppressWarnings("unchecked")
 	public List<JobSnapshot> findExecutingList() {
 		return getSqlSession().selectList("JobSnapshot.findExecutingList");

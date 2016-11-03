@@ -16,11 +16,16 @@ public interface JobSnapshotDAO {
 	void insert(JobSnapshot jobSnapshot);
 
 	/**
-	 * 如果 lastModifyTime 不等于 null， 则被视为乐观锁， 会当做 where 条件
-	 * @param jobSnapshot
-	 * @return
+	 * 更新不为 null 的字段，id 不能为空，modifyTime 默认为系统当前时间
 	 */
 	int updateById(JobSnapshot jobSnapshot);
+
+	/**
+	 * 更新不为 null 的字段，id 不能为空，modifyTime 默认为系统当前时间<br/>
+	 * PS: <b>detail字段不是覆盖更新而是追加</b>，提供这个方法的原因是detail字段追加更新的情况比较多<br/>
+	 * 其他功能与 {@link JobSnapshotDAO#updateById(JobSnapshot)} 方法相同
+	 */
+	int updateByIdAndConcatDetail(JobSnapshot jobSnapshot);
 
 	/**
 	 * {@link JobSnapshotStatusEnum#EXECUTING} 状态的.

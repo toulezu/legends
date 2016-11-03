@@ -56,11 +56,8 @@ public class JobInvokeComponent {
 
 	/**
 	 * 如果在 invoke 阶段应用停机，可能导致任务不会被正常调用。
-	 *
-	 * @param jobInfoId
-	 * @param jobSnapshotId
 	 */
-	public JobSnapshot invoke(Long jobInfoId, Long jobSnapshotId) throws Exception {
+	public boolean invoke(Long jobInfoId, Long jobSnapshotId) throws Exception {
 
 		JobInfo jobInfo = null;
 		JobSnapshot jobSnapshot = null;
@@ -71,7 +68,6 @@ public class JobInvokeComponent {
 
 			// 进入 invoke 阶段.
 			initToInvoke(jobSnapshot);
-			jobSnapshot = jobSnapshotDAO.findById(jobSnapshotId);
 
 			String url = null;
 			// 获取 InvokePolicy
@@ -82,21 +78,19 @@ public class JobInvokeComponent {
 					if (url == null) {
 						// 所有的链接失败.
 						jobFail("Invoking 阶段, 调用目标服务器全部失败, 任务结束.", jobInfo, jobSnapshot);
-						break;
+						return false;
 					}
 
 					// 调用目标服务器,启动任务.
 					JobInvokeResponse invokeRes = invoke(url, jobInfo, jobSnapshot);
-					jobSnapshot = jobSnapshotDAO.findById(jobSnapshotId);
 
 					if (invokeRes.isInvokedSucc()) {
 						// 任务调用成功
 						invokeToExecute(url, jobSnapshot);
-						break;
+						return true;
 					} else {
 						// 任务调用失败
 						invokeFail(url, invokeRes.getErrorMsg(), jobSnapshot);
-						jobSnapshot = jobSnapshotDAO.findById(jobSnapshotId);
 						continue;
 					}
 				} catch (Throwable e) {
@@ -107,12 +101,9 @@ public class JobInvokeComponent {
 
 					// 任务调用时发生异常，失败。
 					invokeFail(url, e.getMessage(), jobSnapshot);
-					jobSnapshot = jobSnapshotDAO.findById(jobSnapshotId);
-
 					continue;
 				}
 			}
-			return jobSnapshotDAO.findById(jobSnapshotId);
 		} catch (Exception e) {
 			if (jobInfo != null && jobInfo.getOwnerPhone() != null) {
 				smsService.sendAlertSms(jobInfo.getOwnerPhone(), jobInfoId, jobInfo.getName(), jobSnapshotId, "任务Invoke阶段发生异常！");
@@ -125,13 +116,12 @@ public class JobInvokeComponent {
 	 * 初始化成功后, 记录信息, 准备开始执行 invoke 阶段.
 	 */
 	protected void initToInvoke(JobSnapshot jobSnapshot) {
-		String detail = "准备调用目标服务器. " + getNowTime() + "\n";
 
 		JobSnapshot update = new JobSnapshot();
 		update.setId(jobSnapshot.getId());
 		update.setStatus(JobSnapshotStatusEnum.INVOKING);
-		update.setDetail(jobSnapshot.getDetail() + detail);
-		jobSnapshotDAO.updateById(update);
+		update.setDetail("准备调用目标服务器. " + getNowTime() + "\n");
+		jobSnapshotDAO.updateByIdAndConcatDetail(update);
 	}
 
 	/**
@@ -146,13 +136,12 @@ public class JobInvokeComponent {
 
 	private JobInvokeResponse invoke(String url, JobInfo jobInfo, JobSnapshot jobSnapshot) throws Exception {
 
-		String detail = "调用[" + url + "]中......\n";
 
 		JobSnapshot update = new JobSnapshot();
 		update.setId(jobSnapshot.getId());
-		update.setDetail(jobSnapshot.getDetail() + detail);
+		update.setDetail("调用【" + url + "】中......\n");
 
-		jobSnapshotDAO.updateById(update);
+		jobSnapshotDAO.updateByIdAndConcatDetail(update);
 
 		JobRequest req = new JobRequest();
 		req.setJobDetailId(jobSnapshot.getId());
@@ -167,42 +156,39 @@ public class JobInvokeComponent {
 	}
 
 	private void invokeFail(String url, String errorMsg, JobSnapshot jobSnapshot) {
-		String detail = "调用[" + url + "]失败, " + getNowTime() + "\n" + "errorMsg: " + errorMsg + "\n";
 
 		JobSnapshot update = new JobSnapshot();
 		update.setId(jobSnapshot.getId());
-		update.setDetail(jobSnapshot.getDetail() + detail);
+		update.setDetail("调用【" + url + "】失败, " + getNowTime() + "\n" + "errorMsg: " + errorMsg + "\n");
 
-		jobSnapshotDAO.updateById(update);
+		jobSnapshotDAO.updateByIdAndConcatDetail(update);
 	}
 
 	protected void invokeToExecute(String url, JobSnapshot jobSnapshot) {
 		String ip = getIpFromUrl(url);
-		String detail = "调用[" + url + "]成功, 开始执行任务. " + getNowTime() + "\n";
 
 		JobSnapshot update = new JobSnapshot();
 		update.setId(jobSnapshot.getId());
 		update.setUrl(url);
 		update.setIp(ip);
 		update.setStatus(JobSnapshotStatusEnum.EXECUTING);
-		update.setDetail(jobSnapshot.getDetail() + detail);
+		update.setDetail("调用【" + url + "】成功, 开始执行任务. " + getNowTime() + "\n");
 
-		jobSnapshotDAO.updateById(update);
+		jobSnapshotDAO.updateByIdAndConcatDetail(update);
 	}
 
 	/**
 	 * 任务失败时.
 	 */
 	protected void jobFail(String errorMessage, JobInfo jobInfo, JobSnapshot jobSnapshot) {
-		String detail = "任务失败：" + errorMessage + getNowTime() + "\n";
 
 		JobSnapshot update = new JobSnapshot();
 		update.setId(jobSnapshot.getId());
 		update.setResult(errorMessage);
 		update.setStatus(JobSnapshotStatusEnum.ERROR);
 		update.setTimeConsume(0L);
-		update.setDetail(jobSnapshot.getDetail() + detail);
-		jobSnapshotDAO.updateById(update);
+		update.setDetail("任务失败：" + errorMessage + getNowTime() + "\n");
+		jobSnapshotDAO.updateByIdAndConcatDetail(update);
 
 		JobInfoTypeEnum type = jobInfo.getType();
 

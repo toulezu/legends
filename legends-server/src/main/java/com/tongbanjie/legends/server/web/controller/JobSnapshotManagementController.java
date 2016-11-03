@@ -152,8 +152,7 @@ public class JobSnapshotManagementController {
 		
 		JobStopResponse stopResp = jobSnapshotService.execStopAndGetResult(id);
 		
-		logger.info("RESULT=" + JSON.toJSON(stopResp));
-		
+		logger.info("execute stop jobsnapshort >>>, jobSnapshortId=" + id + ", RESULT=" + JSON.toJSON(stopResp));
 		
 		if (stopResp.isStopNoticeSucc()) {
 			mapResult.put("status", STATUS_SUCCESS);

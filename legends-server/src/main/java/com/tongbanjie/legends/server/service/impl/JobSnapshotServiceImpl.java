@@ -193,7 +193,6 @@ public class JobSnapshotServiceImpl implements JobSnapshotService {
 			return stopResp;
 		}
 
-
 		// 执行请求, 封装返回结果
 		JobRequest req = new JobRequest();
 		req.setJobDetailId(jobSnapshotId);
@@ -219,7 +218,6 @@ public class JobSnapshotServiceImpl implements JobSnapshotService {
 			stopResp = JSON.parseObject(resBody, JobStopResponse.class);
 		}
 
-
 		// 更新状态
 		dealJobStopResponse(jobSnapshot, stopResp);
 
@@ -232,14 +230,12 @@ public class JobSnapshotServiceImpl implements JobSnapshotService {
 		if (!stopResp.isStopNoticeSucc()) return;
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String detail = "停止任务通知成功. 时间:" + sdf.format(new Date()) + "\n";
 
 		JobSnapshot update = new JobSnapshot();
 		update.setId(jobSnapshot.getId());
-		update.setDetail(jobSnapshot.getDetail() + detail);
-		update.setStatus(JobSnapshotStatusEnum.EXECUTING);
+		update.setDetail("停止任务通知成功. 时间:" + sdf.format(new Date()) + "\n");
 
-		jobSnapshotDAO.updateById(update);
+		jobSnapshotDAO.updateByIdAndConcatDetail(update);
 	}
 
 }

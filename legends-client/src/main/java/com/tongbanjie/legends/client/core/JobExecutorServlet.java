@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.tongbanjie.legends.client.enums.JobStatus;
 import com.tongbanjie.legends.client.enums.MethodFlag;
 import com.tongbanjie.legends.client.model.*;
+import com.tongbanjie.legends.client.utils.AccessUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -34,11 +35,13 @@ public class JobExecutorServlet extends HttpServlet {
 
 	private static final String CHAR_SET = "UTF-8";
 
-	private static final String THREAD_NUM = "nThreads";
+	private static final String THREAD_NUM = "nThreads"; //执行任务的线程池的数量
 
 	private ApplicationContext context;
 
 	private ExecutorService pool;
+
+
 
 
 	/**
@@ -46,12 +49,10 @@ public class JobExecutorServlet extends HttpServlet {
 	 */
 	private ConcurrentHashMap<Long, Future> executingQueue = new ConcurrentHashMap<Long, Future>();
 
-
 	/**
 	 * 存放已完成的job_id以及执行结果的队列
 	 */
 	private ConcurrentHashMap<Long, JobResult> finishedQueue = new ConcurrentHashMap<Long, JobResult>();
-
 
 	/**
 	 * 缓存执行的job
@@ -86,6 +87,12 @@ public class JobExecutorServlet extends HttpServlet {
 
 	private void handleJob(HttpServletRequest request,
 	                       HttpServletResponse response) throws IOException {
+
+		if (!AccessUtils.isAllow(request)) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			System.err.println("来访者IP【" + AccessUtils.extractIp(request) + "】，不在允许请求范围内，所以拒绝服务，可以修改 Servlet allow 配置解决。");
+			return;
+		}
 
 		JobRequest jobRequest = getJobRequestFromHttpRequest(request);
 
@@ -145,16 +152,10 @@ public class JobExecutorServlet extends HttpServlet {
 				throw new IOException("Unknown Http Request.");
 			}
 		}
-
-		return;
-
 	}
 
 	/**
 	 * 处理server端invoke()方法的请求
-	 *
-	 * @param jobRequest
-	 * @return
 	 */
 	private JobInvokeResponse processInvokeRequest(JobRequest jobRequest) {
 		JobInvokeResponse invokeResp = new JobInvokeResponse();
@@ -192,13 +193,15 @@ public class JobExecutorServlet extends HttpServlet {
 				TimeUnit.SECONDS.sleep(3);
 				stopDetail.append("任务正在停止..... 请稍后查看任务状态");
 			} else {
-				stopDetail.append("该任务没有继承AbstractJob接口, 本叼系统, 不确一定能停掉这个任务.(注:只有任务存在sleep,wait等阻塞情况时, 本大爷才能停掉");
+				stopDetail.append("该任务没有继承AbstractJob接口, 不确一定能停掉这个任务.(注:只有任务存在sleep,wait等阻塞情况时, 才能停掉");
 			}
 
-			// 2. 通过interrupte 尝试停止JOB线程
+			// 2. 通过 interrupt 尝试停止JOB线程
 			Long jobDetailId = jobRequest.getJobDetailId();
 			Future future = executingQueue.get(jobDetailId);
-			future.cancel(true);
+			if (future != null) {
+				future.cancel(true);
+			}
 
 			stopResp.setStopNoticeSucc(true);
 			stopResp.setStopDetail(stopDetail.toString());
@@ -217,9 +220,6 @@ public class JobExecutorServlet extends HttpServlet {
 
 	/**
 	 * 处理server端executing()方法的请求
-	 *
-	 * @param jobRequest
-	 * @return
 	 */
 	private JobExecutingResponse processExecRequest(JobRequest jobRequest) {
 		JobExecutingResponse execResp = new JobExecutingResponse();
@@ -241,10 +241,6 @@ public class JobExecutorServlet extends HttpServlet {
 
 	/**
 	 * 先校验类名对应的bean是否存在，以及是否实现了{@link Job}}接口，再放到缓存中去
-	 *
-	 * @param classFullPath
-	 * @return
-	 * @throws Exception
 	 */
 	private Job getJob(String classFullPath) throws Exception {
 		Job job = jobCache.get(classFullPath);
@@ -272,16 +268,12 @@ public class JobExecutorServlet extends HttpServlet {
 
 	/**
 	 * 从httpRequest请求中获取JobRequest对象
-	 *
-	 * @param request
-	 * @return
-	 * @throws IOException
 	 */
 	private JobRequest getJobRequestFromHttpRequest(HttpServletRequest request)
 			throws IOException {
 		BufferedReader reader = request.getReader();
 		StringBuilder sb = new StringBuilder();
-		String input = "";
+		String input;
 		while ((input = reader.readLine()) != null) {
 			sb.append(input);
 		}
@@ -294,16 +286,12 @@ public class JobExecutorServlet extends HttpServlet {
 			return null;
 		}
 
-		return (JobRequest) obj;
+		return obj;
 	}
 
 
 	/**
 	 * 将结果返回给server端
-	 *
-	 * @param response
-	 * @param obj
-	 * @throws IOException
 	 */
 	private void writeResponse(HttpServletResponse response, Object obj)
 			throws IOException {
@@ -353,7 +341,7 @@ public class JobExecutorServlet extends HttpServlet {
 			} catch (Throwable e) {
 				e.printStackTrace();
 				jobResult.setSuccess(false);
-				jobResult.setResult(e.getMessage());
+				jobResult.setResult(e.getClass().getName() + ": " + e.getMessage());
 			}
 
 			jobResult.setActualFinishTime(new Date());

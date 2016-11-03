@@ -13,7 +13,7 @@ public class JobSnapshot {
 	private String ip;
 	private String url;
 	private String result;
-	private long timeConsume;
+	private Long timeConsume;
 	private String detail;
 	private String serverAddress;
 	private Date createTime;
@@ -85,11 +85,11 @@ public class JobSnapshot {
 		this.result = result;
 	}
 
-	public long getTimeConsume() {
+	public Long getTimeConsume() {
 		return timeConsume;
 	}
 
-	public void setTimeConsume(long timeConsume) {
+	public void setTimeConsume(Long timeConsume) {
 		this.timeConsume = timeConsume;
 	}
 
@@ -141,5 +141,24 @@ public class JobSnapshot {
 		this.actualFinishTime = actualFinishTime;
 	}
 
-
+	@Override
+	public String toString() {
+		return "JobSnapshot{" +
+				"id=" + id +
+				", jobInfoId=" + jobInfoId +
+				", name='" + name + '\'' +
+				", group='" + group + '\'' +
+				", status=" + status +
+				", ip='" + ip + '\'' +
+				", url='" + url + '\'' +
+				", result='" + result + '\'' +
+				", timeConsume=" + timeConsume +
+				", detail='" + detail + '\'' +
+				", serverAddress='" + serverAddress + '\'' +
+				", createTime=" + createTime +
+				", modifyTime=" + modifyTime +
+				", actualStartTime=" + actualStartTime +
+				", actualFinishTime=" + actualFinishTime +
+				'}';
+	}
 }

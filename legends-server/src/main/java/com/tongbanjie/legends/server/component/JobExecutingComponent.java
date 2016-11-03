@@ -66,14 +66,16 @@ public class JobExecutingComponent {
 			jobInfo = jobInfoDAO.findById(jobInfoId);
 
 			if (jobInfo == null) {
-				logger.warn("获取任务结果时，JobInfo == null, " + getJobSummary(jobInfo, jobSnapshot));
-				jobFail("获取任务结果时，JobInfo == null", null, jobSnapshot, null);
+				String message = "获取任务结果时，JobInfo == null。";
+				logger.warn(message + getJobSummary(jobInfo, jobSnapshot));
+				jobFail(message, null, jobSnapshot, null);
 				return false;
 			}
 
 			if (!jobInfo.isActivity()) {
-				logger.warn("获取任务结果时，JobInfo 是不激活状态, " + getJobSummary(jobInfo, jobSnapshot));
-				jobFail("获取任务结果时，JobInfo 是不激活状态", jobInfo, jobSnapshot, null);
+				String message = "获取任务结果时，JobInfo 是不激活状态。";
+				logger.warn(message + getJobSummary(jobInfo, jobSnapshot));
+				jobFail(message, jobInfo, jobSnapshot, null);
 				return false;
 			}
 
@@ -97,6 +99,10 @@ public class JobExecutingComponent {
 				return true;
 			}
 
+		} catch (org.apache.http.conn.ConnectTimeoutException e) {
+			// 因超时日志过多，且对系统无重大影响，所以打印 warn 日志
+			logger.warn("获取任务结果超时, " + getJobSummary(jobInfo, jobSnapshot), e);
+			return true;
 		} catch (Throwable e) {
 			logger.error("获取任务结果时发生异常, " + getJobSummary(jobInfo, jobSnapshot), e);
 			// 获取任务执行结果时发生异常，有可能是网络问题，目标服务器假死等等。
@@ -122,7 +128,7 @@ public class JobExecutingComponent {
 		try {
 			exeRes = JSON.parseObject(resBody, JobExecutingResponse.class);
 		} catch (JSONException e) {
-			logger.error("获取任务执行结果 JSON 解析异常,Response Body:{}", resBody);
+			logger.error("获取任务执行结果 JSON 解析异常," + getJobSummary(jobInfo, jobSnapshot) + ",Response Body:{}", resBody);
 			throw e;
 		}
 		return exeRes;
@@ -136,7 +142,7 @@ public class JobExecutingComponent {
 		if (jobResult.isSuccess()) {
 			jobSucc(jobInfo, jobSnapshot, jobResult);
 		} else {
-			jobFail("执行时发生异常. 异常信息[" + jobResult.getResult() + "]", jobInfo, jobSnapshot, jobResult);
+			jobFail("执行时发生异常. 异常信息【" + jobResult.getResult() + "】", jobInfo, jobSnapshot, jobResult);
 		}
 		logger.info("任务执行完成，获取结果为JobSummary:{},JobResult:{}", new Object[]{getJobSummary(jobInfo, jobSnapshot)}, JSON.toJSONString(jobResult));
 	}
@@ -152,17 +158,16 @@ public class JobExecutingComponent {
 	 * 任务执行成功时，调用的方法
 	 */
 	protected void jobSucc(JobInfo jobInfo, JobSnapshot jobSnapshot, JobResult jobResult) {
-		String detail = "任务已结束,并且执行成功. 结果[" + jobResult.getResult() + "] " + getNowTime() + "\n";
 		JobSnapshot update = new JobSnapshot();
 		update.setId(jobSnapshot.getId());
 		update.setStatus(JobSnapshotStatusEnum.COMPLETED);
 		update.setResult(jobResult.getResult());
 		update.setTimeConsume(jobResult.getTimeConsume());
-		update.setDetail(jobSnapshot.getDetail() + detail);
+		update.setDetail("任务已结束,并且执行成功. 结果【" + jobResult.getResult() + "】" + getNowTime() + "\n");
 		update.setActualStartTime(jobResult.getActualStartTime());
 		update.setActualFinishTime(jobResult.getActualFinishTime());
 
-		jobSnapshotDAO.updateById(update);
+		jobSnapshotDAO.updateByIdAndConcatDetail(update);
 
 		JobInfoTypeEnum type = jobInfo.getType();
 		if (type.equals(JobInfoTypeEnum.ONCE)) {
@@ -177,13 +182,12 @@ public class JobExecutingComponent {
 	 * 任务失败.
 	 */
 	protected void jobFail(String errorMessage, JobInfo jobInfo, JobSnapshot jobSnapshot, JobResult jobResult) {
-		String detail = "任务失败：" + errorMessage + getNowTime() + "\n";
 
 		JobSnapshot update = new JobSnapshot();
 		update.setId(jobSnapshot.getId());
 		update.setResult(errorMessage);
 		update.setStatus(JobSnapshotStatusEnum.ERROR);
-		update.setDetail(jobSnapshot.getDetail() + detail);
+		update.setDetail("任务失败：" + errorMessage + getNowTime() + "\n");
 
 		if(jobResult != null) {
 			update.setTimeConsume(jobResult.getTimeConsume());
@@ -191,7 +195,7 @@ public class JobExecutingComponent {
 			update.setActualFinishTime(jobResult.getActualFinishTime());
 		}
 
-		jobSnapshotDAO.updateById(update);
+		jobSnapshotDAO.updateByIdAndConcatDetail(update);
 
 		if (jobInfo != null) {
 			JobInfoTypeEnum type = jobInfo.getType();

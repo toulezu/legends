@@ -36,12 +36,12 @@ public class JobInfoDAOTest {
 		Assert.notNull(dao);
 
 		JobInfoQuery query = new JobInfoQuery();
+		query.setLikeName("上");
 		List<JobInfo> list = dao.findByParam(query);
 
 		int i = dao.countByParam(query);
 
 		Assert.isTrue(list.size() == i);
-
 	}
 
 }
