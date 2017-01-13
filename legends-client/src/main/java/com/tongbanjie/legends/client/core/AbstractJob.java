@@ -54,7 +54,7 @@ public abstract class AbstractJob implements Job{
 	}
 	
 	/**
-	 * 停止任务操作
+	 * 启动任务操作
 	 */
 	public void open() {
 		this.terminated.set(false);

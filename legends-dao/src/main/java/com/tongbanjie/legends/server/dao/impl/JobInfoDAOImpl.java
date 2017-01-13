@@ -8,6 +8,7 @@ import org.mybatis.spring.support.SqlSessionDaoSupport;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -16,7 +17,11 @@ public class JobInfoDAOImpl extends SqlSessionDaoSupport implements JobInfoDAO {
 
 	@Override
 	public List<JobInfo> findByParam(JobInfoQuery jobInfoQuery) {
-		return getSqlSession().selectList("JobInfo.findByParam", jobInfoQuery);
+		if (jobInfoQuery != null) {
+			return getSqlSession().selectList("JobInfo.findByParam", jobInfoQuery);
+		} else {
+			return Collections.emptyList();
+		}
 	}
 
 	@Override

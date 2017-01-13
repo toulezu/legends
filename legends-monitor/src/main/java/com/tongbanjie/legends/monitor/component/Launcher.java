@@ -145,11 +145,11 @@ public class Launcher implements InitializingBean {
 				logger.info(message);
 			} else {
 				// 没有执行成功的记录，要打 110 报警
-				sendWarning(jobInfo);
+				// sendWarning(jobInfo);
 
-				String message = String.format("检查任务完成情况, 但没有执行成功的记录，JobInfoID: [%d], Name: [%s], Group: [%s], IsCheckFinish: [%b], CheckFinishTime: [%s]",
-						new Object[]{jobInfo.getId(), jobInfo.getName(), jobInfo.getGroup(), jobInfo.isCheckFinish(), jobInfo.getCheckFinishTime()});
-				logger.warn(message);
+				//String message = String.format("检查任务完成情况, 但没有执行成功的记录，JobInfoID: [%d], Name: [%s], Group: [%s], IsCheckFinish: [%b], CheckFinishTime: [%s]",
+				//		new Object[]{jobInfo.getId(), jobInfo.getName(), jobInfo.getGroup(), jobInfo.isCheckFinish(), jobInfo.getCheckFinishTime()});
+				//logger.warn(message);
 			}
 
 			checked.put(jobInfo.getId(), yyyyMMdd);
@@ -171,7 +171,7 @@ public class Launcher implements InitializingBean {
 			for (String ownerPhone : ownerPhoneArr) {
 				try {
 
-					// 发送报警信息代码，因依赖内部实现，所以删除相关代码是
+					// TODO 发送报警信息代码，因依赖内部实现，所以删除相关代码是
 
 				} catch (Exception e) {
 					logger.error("发送报警信息失败, OwnerPhone:[" + ownerPhone + "], WarningMessage:[" + warning + "]", e);

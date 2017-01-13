@@ -31,6 +31,20 @@
 ![img](https://github.com/tongbanjie/legends/blob/master/readme/JobSnapshot.png)
 
 
+## 模块介绍
+
+### legends 
+- 打包，编译其他项目
+
+### legends-client
+
+### legends-dao
+
+### legends-monitor
+
+### legends-server
+
+
 ### 其他
 * 删除一个任务可以在历史记录里看到。
 * 任务执行情况数据过多后，清理一周或一个月前的数据。

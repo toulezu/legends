@@ -2,16 +2,28 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>com.tongbanjie.legends</groupId>
+		<groupId>com.ctrip.legends</groupId>
 		<artifactId>legends</artifactId>
-		<version>1.0-os</version>
+		<version>1.0-SNAPSHOT</version>
 	</parent>
+	
 	<artifactId>legends-client</artifactId>
 
 	<properties>
 		<spring.version>3.2.8.RELEASE</spring.version>
 		<servlet-api.version>2.5</servlet-api.version>
 	</properties>
+	
+	<distributionManagement>
+		<repository>
+			<id>releases</id>
+			<url>http://maven.dev.sh.ctripcorp.com:8081/nexus/content/repositories/releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<url>http://maven.dev.sh.ctripcorp.com:8081/nexus/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<dependencies>
 		<dependency>
@@ -33,6 +45,7 @@
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
 			<version>${servlet-api.version}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>

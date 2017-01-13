@@ -47,7 +47,7 @@ public class JobExecutorServlet extends HttpServlet {
 	/**
 	 * 存放正在执行中的job_id的队列
 	 */
-	private ConcurrentHashMap<Long, Future> executingQueue = new ConcurrentHashMap<Long, Future>();
+	private ConcurrentHashMap<Long, Future<?>> executingQueue = new ConcurrentHashMap<Long, Future<?>>();
 
 	/**
 	 * 存放已完成的job_id以及执行结果的队列
@@ -198,7 +198,7 @@ public class JobExecutorServlet extends HttpServlet {
 
 			// 2. 通过 interrupt 尝试停止JOB线程
 			Long jobDetailId = jobRequest.getJobDetailId();
-			Future future = executingQueue.get(jobDetailId);
+			Future<?> future = executingQueue.get(jobDetailId);
 			if (future != null) {
 				future.cancel(true);
 			}
