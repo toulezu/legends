@@ -1,12 +1,20 @@
 package com.tongbanjie.legends.server.component;
 
-import com.tongbanjie.legends.server.component.execute.ExecutingJobHolder;
-import com.tongbanjie.legends.server.component.execute.GetJobResultThread;
-import com.tongbanjie.legends.server.dao.JobInfoDAO;
-import com.tongbanjie.legends.server.dao.JobSnapshotDAO;
-import com.tongbanjie.legends.server.dao.dataobject.JobInfo;
-import com.tongbanjie.legends.server.dao.dataobject.JobSnapshot;
-import org.quartz.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Resource;
+
+import org.quartz.JobDetail;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,13 +22,12 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import com.tongbanjie.legends.server.component.execute.ExecutingJobHolder;
+import com.tongbanjie.legends.server.component.execute.GetJobResultThread;
+import com.tongbanjie.legends.server.dao.JobInfoDAO;
+import com.tongbanjie.legends.server.dao.JobSnapshotDAO;
+import com.tongbanjie.legends.server.dao.dataobject.JobInfo;
+import com.tongbanjie.legends.server.dao.dataobject.JobSnapshot;
 
 @Component
 public class Launcher implements InitializingBean {
@@ -100,7 +107,8 @@ public class Launcher implements InitializingBean {
 				if (jobInfo.isActivity()) {
 					/***************** 注册激活状态的任务 *****************/
 					Trigger trigger = schedulerWrapper.createCronTrigger(jobInfo);
-					schedulerWrapper.scheduleJob(jobDetail, trigger);
+					Date date = schedulerWrapper.scheduleJob(jobDetail, trigger);
+					System.out.println(date);
 				} else {
 					/***************** 移除停止的任务 *****************/
 					schedulerWrapper.deleteJob(jobKey);

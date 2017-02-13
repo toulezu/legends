@@ -1,27 +1,23 @@
 package com.tongbanjie.legends.server.dao.impl;
 
-import com.tongbanjie.legends.server.dao.JobInfoDAO;
-import com.tongbanjie.legends.server.dao.dataobject.JobInfo;
-import com.tongbanjie.legends.server.dao.query.JobInfoQuery;
+import java.util.Date;
+import java.util.List;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.mybatis.spring.support.SqlSessionDaoSupport;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import com.tongbanjie.legends.server.dao.JobInfoDAO;
+import com.tongbanjie.legends.server.dao.dataobject.JobInfo;
+import com.tongbanjie.legends.server.dao.query.JobInfoQuery;
 
 @Repository
 public class JobInfoDAOImpl extends SqlSessionDaoSupport implements JobInfoDAO {
 
 	@Override
 	public List<JobInfo> findByParam(JobInfoQuery jobInfoQuery) {
-		if (jobInfoQuery != null) {
-			return getSqlSession().selectList("JobInfo.findByParam", jobInfoQuery);
-		} else {
-			return Collections.emptyList();
-		}
+		return getSqlSession().selectList("JobInfo.findByParam", jobInfoQuery);
 	}
 
 	@Override

@@ -74,6 +74,46 @@
 		</where>
 	</update>
 
+
+	<update id="updateByIdAndConcatDetail" parameterType="JobSnapshot">
+		update job_snapshot
+		<set>
+			<if test="status != null" >
+				status = #{status},
+			</if>
+			<if test="ip != null" >
+				ip = #{ip},
+			</if>
+			<if test="url != null" >
+				url = #{url},
+			</if>
+			<if test="result != null" >
+				result = #{result},
+			</if>
+			<if test="timeConsume != null" >
+				time_consume = #{timeConsume},
+			</if>
+			<if test="detail != null" >
+				detail = concat(detail,#{detail}),
+			</if>
+			<if test="serverAddress != null" >
+				server_address = #{serverAddress},
+			</if>
+			<if test="modifyTime != null" >
+				modify_time = #{modifyTime},
+			</if>
+			<if test="actualStartTime != null">
+				actual_start_time = #{actualStartTime},
+			</if>
+			<if test="actualFinishTime != null">
+				actual_finish_time = #{actualFinishTime},
+			</if>
+		</set>
+		<where>
+			id = #{id}
+		</where>
+	</update>
+
 	<select id="findExecutingList" resultMap="JobSnapshotResultMap">
 		select * from job_snapshot where `status` = 'EXECUTING'
 	</select>

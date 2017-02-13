@@ -61,16 +61,16 @@
     <select id="findByParam" parameterType="com.tongbanjie.legends.server.dao.query.JobInfoQuery" resultMap="JobInfoResultMap">
         select * from job_info
         <trim prefix="where" prefixOverrides="AND">
-            <if test="name != null" >
+            <if test="name != null and name != ''" >
                 AND `name` = #{name}
             </if>
-            <if test="group != null" >
+            <if test="group != null and group != ''" >
                 AND `group` = #{group}
             </if>
-            <if test="isActivity != null">
+            <if test="isActivity != null and isActivity != ''">
                 AND `is_activity` = #{isActivity}
             </if>
-            <if test="isCheckFinish != null">
+            <if test="isCheckFinish != null and isCheckFinish != ''">
                 AND `is_check_finish` = #{isCheckFinish}
             </if>
         </trim>
